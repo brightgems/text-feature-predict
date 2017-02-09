@@ -14,7 +14,6 @@ def clean_str(string):
     """
     return cleaned lines
     """
-
     string = string.lower()
     string = re.sub(r"\'ve", " have", string, flags=re.I)
     string = re.sub(r"\'re", " are", string, flags=re.I)
@@ -23,7 +22,7 @@ def clean_str(string):
     string = re.sub(r"can\'t", " cannot", string, flags=re.I)
     string = re.sub(r"n\'t", " not", string, flags=re.I)
     string = re.sub(r"\'m", " am", string, flags=re.I)
-    string = re.sub(r"\'s", " is", string, flags=re.I)
+    string = re.sub(r"\'s", " has", string, flags=re.I)
     string = re.sub(r"[^a-z\- \n]", "", string=string, flags=re.I)
     # TODO: deal with problem with 's
     string = re.sub(r"\s{2,}", " ", string)
@@ -35,7 +34,6 @@ def clean_str_sen(string):
     return cleaned lines
     generate <EOS> make for sentence
     """
-
     string = string.lower()
     string = re.sub(r"\'ve", " have", string, flags=re.I)
     string = re.sub(r"\'re", " are", string, flags=re.I)
@@ -73,11 +71,9 @@ def clean_files(path_in, path_out):
 
 
 
-
-
 if __name__ == "__main__":
     polarity = "neg"
     path_in = "../../Data/Raw/"+polarity+"/"
     path_out = "../../Data/Raw/cleaned_"+polarity+"/"
     # clean_files(path_in=path_in, path_out=path_out)
-    print clean_str_sen("this is a be?\n are you a. it's not my!")
+    print clean_str("this is a be?\n are you a. it's not my!")

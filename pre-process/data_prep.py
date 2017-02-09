@@ -12,17 +12,12 @@ import nltk
 from operator import itemgetter
 import cPickle as pkl
 
-from clean_str import clean_str, clean_str_sen
+from clean_str import clean_str_sen
 
-'''
-company_names = ["Microsoft", "Google", "Facebook", "Yahoo", "Amazon", "Apple",
-                 "eBay", "IBM", "Oracle", "Adobe", "Cisco", "Hewlett-Packard"]
-'''
-company_names = ["Microsoft"]
 
 def extract_docs(path_in, path_out):
     """
-    extract all crawled documents in the given path
+    extract (and merge) all crawled documents in the given path
     :param path_in: path to crawled docs
     :param path_out: path to output extracted docs
     """
@@ -32,68 +27,71 @@ def extract_docs(path_in, path_out):
     except:
         os.mkdir(path_out)
 
-    f_json = dict()
-    f_text = dict()
+    f_json = defaultdict(list)
+    f_text = defaultdict(list)
     companies = []
 
     for f in files:
         if "json.txt" in f:
             company = f.replace("-json.txt", "").split("_")[-1]
-            f_json[company] = f
+            f_json[company].append(f)
             companies.append(company)
         if "text.tsv" in f:
             company = f.replace("-text.tsv", "").split("_")[-1]
-            f_text[company] = f
+            f_text[company].append(f)
+    companies = list(set(companies))
+
     for company in companies:
         print "processing", company
-        extract_doc_compary(f_json=path_in+f_json[company],
-                            f_contents=path_in+f_text[company],
+        doc_info = []
+        doc_contents = []
+        # load all the lines with meaningful doc_info
+        for f in f_json[company]:
+            document_json = open(path_in + f, "r")
+            for line in document_json.readlines():
+                l = ast.literal_eval(line)['response']['docs']
+                if len(l) > 0:
+                    for ll in l:
+                        ll["pub_date"] = ll["pub_date"].split("T")[0]
+                    doc_info.append(l)
+        # load all the articles
+        for f in f_text[company]:
+            document_contents = open(path_in + f, "r")
+            for line in document_contents.readlines():
+                split = line.split('\t')
+                if len(split) == 3:  # TODO: Bug in parsing
+                    doc_contents.append((split[0], split[2].replace('\n', '')))
+
+        extract_doc_compary(doc_info=doc_info,
+                            doc_contents=doc_contents,
                             f_output=path_out+company+".tsv")
 
-def extract_doc_compary(f_json, f_contents, f_output):
+def extract_doc_compary(doc_info, doc_contents, f_output):
     """
     extract date and actual textual articles from raw corpus
-    :param document_json: name to file of crawled meta-data,
-                          each line is meta-data for one query, extract "response": "docs"
-    :param document_contents: name to file of actual textual articles
-    :param document_output: each line: date /t list of articles
+    :param doc_info: doc info loaded from json file
+    :param doc_contents: actual doc articles from text file
+    :param f_output: path to output file, each line: date /t [a list of articles]
     """
-
-    document_json = open(f_json, "r")
-    document_contents = open(f_contents, "r")
     document_output = open(f_output, "w")
-    # load all the lines with meaningful doc_info
-    document_list = []
-    for line in document_json.readlines():
-        l = ast.literal_eval(line)['response']['docs']
-        if len(l) > 0:
-            document_list.append(ast.literal_eval(line)['response']['docs'])
 
     # Create DataFrame that contains all attributes
     doc_attributes = pd.DataFrame()
-    for doc in document_list:
+    for doc in doc_info:
         doc_attributes = doc_attributes.append(pd.DataFrame.from_dict(doc))
     doc_attributes = doc_attributes.reset_index(drop=True)
     doc_attributes = doc_attributes.drop_duplicates(subset='_id') # remove duplicate rows w.r.t. label "_id"
 
-    # doc_attributes.loc[doc_attributes['_id'] == '522df91d38f0d8740ac9ea63']
-
     # Create DataFrame that contains docId and document content
-    contents = []
-    for line in document_contents.readlines():
-        split = line.split('\t')
-        if len(split) == 3:  # TODO: Bug in parsing
-            contents.append((split[0], split[2].replace('\n', '')))
-
-    doc_contents = pd.DataFrame(contents, columns=['_id', 'text'])
-    doc_contents = doc_contents.drop_duplicates()
+    contents = pd.DataFrame(doc_contents, columns=['_id', 'text'])
+    contents = contents.drop_duplicates()
 
     # Join table of attributes with document content table
-    collection = doc_attributes.merge(doc_contents, left_on="_id", right_on="_id")
+    collection = doc_attributes.merge(contents, left_on="_id", right_on="_id")
     # collection[['_id', 'pub_date', 'text']]
     # print collection
 
-    # concatinate documents
+    # concatenate documents
     select = collection[['pub_date', 'text']]
     concat = select.groupby('pub_date')
     concat = concat['text'].apply(list)
@@ -102,8 +100,6 @@ def extract_doc_compary(f_json, f_contents, f_output):
     # write to output file
     concat.to_csv(document_output, sep='\t', encoding='utf8')
 
-    document_json.close()
-    document_contents.close()
     document_output.close()
 
 
@@ -221,11 +217,11 @@ class lda_prep:
 
 if __name__ == "__main__":
 
-    path_raw = '../data/crawled/'
-    path_extracted = '../data/extracted/'
-    path_lda = '../data/lda/'
+    path_raw = '../../data/crawled/'
+    path_extracted = '../../data/extracted/'
+    path_lda = '../../data/lda/'
 
-    # extract_docs(path_in=path_raw, path_out=path_extracted)
-    data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
-    data_prep.comb_docs(fout_name="corpus-raw.txt")
+    extract_docs(path_in=path_raw, path_out=path_extracted)
+    # data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
+    # data_prep.comb_docs(fout_name="corpus-raw.txt")
     # data_prep.prep_doc_term()
