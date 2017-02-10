@@ -1,15 +1,26 @@
 import numpy as np
 import os
 import random
+from datetime import date
 
 class DataPoint(object):
 
-    def __init__(self, label, values):
+    def __init__(self, timepoint, label, values):
         self.label = label
         self.values = values
+        self.timepoint = to_date(timepoint)
+
+
+def to_date(string):
+    split = string.split('-')
+    return date(int(split[0]), int(split[1]), int(split[2]))
 
 
 def read_dataset(path):
+    '''
+    :param path:  Path to the dataset
+    :return: A list of DataPoint
+    '''
     f = open(path, 'r')
 
     dataset = []
@@ -17,17 +28,24 @@ def read_dataset(path):
     for line in f.readlines():
         line = line.replace('\n', '')
         splits = line.split()
+        timepoint = splits[0]
+        label = int(splits[1])
         values = dict()
-        for split in splits[1:]:
+        for split in splits[2:]:
             feature = int(split.split(':')[0])
             value = float(split.split(':')[1])
             values[feature] = value
-        dataset.append(DataPoint(int(splits[0]), values))
+        dataset.append(DataPoint(timepoint, label, values))
 
     return dataset
 
 
 def sample_balanced_dataset(dataset, shuffle=True, sample=True):
+    '''
+    Sample data set that has as many positive instances
+     as it has negative instances
+    '''
+
     positive = []
     negative = []
 
@@ -51,6 +69,12 @@ def sample_balanced_dataset(dataset, shuffle=True, sample=True):
 
 
 def k_fold_datasets(positive, negative, k):
+    '''
+    Returns k datasets for train and test, corresponding to
+    k folds each having the same amount of negative and positive samples
+    '''
+
+
     train = [0] * k
     test = [0] * k
 
@@ -67,6 +91,40 @@ def k_fold_datasets(positive, negative, k):
                 train[i].extend(folds_neg[j].tolist())
 
     return train, test
+
+def separate_datasets_by_time(dataset, split_date):
+    '''
+    Splits the dataset into train and test according to the
+    parameter split_date
+
+    :param dataset: A list of DataPoint
+    :param split_date: The date to be split. Instances smaller or
+    equal to split_date will be part of the train set. Instances larger
+    than split_date will be part of the test set
+    :return: Training and test sets
+    '''
+
+    train = []
+    test = []
+    num_train = 0
+    num_test = 0
+
+    for datapoint in dataset:
+        if datapoint.timepoint <= split_date:
+            train.append(datapoint)
+            num_train += 1
+        else:
+            test.append(datapoint)
+            num_test += 1
+
+    size_of_datasets = float(len(train) + len(test))
+   # print "Dataset separated by time. {}% train, {}% test"\
+    #     .format(len(train) / size_of_datasets, len(test) / size_of_datasets)
+
+    return train, test
+
+
+
 
 def train_test_to_file(train, test, train_out, test_out):
     tro = open(train_out, 'w')
@@ -94,6 +152,28 @@ def valid_to_file(valid, valid_out):
             tvo.write('{}:{} '.format(feature, value))
         tvo.write('\n')
     tvo.close()
+
+
+def generate_validation_split(train, perc_split):
+    '''
+    Takes per_split percent data from the training set to create
+    the validation set
+
+    :param train: The training set
+    :param perc_split: The percentage of the number of points you want
+        to take from training (0.3 = 30%)
+    :return: training and validation sets
+    '''
+
+    random.shuffle(train)
+
+    valid = []
+
+    for i in range(0, int(len(train) * perc_split)):
+        valid.append(train.pop())
+
+    return valid, train
+
 
 def generate_validation(positive, negative, k=6):
     folds_pos = np.array_split(positive, k)
@@ -159,9 +239,53 @@ def generate_dataset(num_folds, st, path):
                                    path_cross + file_name + '.train.s{}.k{}'.format(k, i),
                                    path_cross + file_name + '.test.s{}.k{}'.format(k, i))
 
+
+def generate_dataset_time(st, path, split_date):
+    path_data = path + st + '/'
+    path_time = path + 'time/'
+    path_obj = path_time + st + '/'
+
+    try:
+        os.stat(path_time)
+    except:
+        os.mkdir(path_time)
+
+    try:
+        os.stat(path_obj)
+    except:
+        os.mkdir(path_obj)
+
+    for data_file in os.listdir(path_data):
+        print "generation training data for", data_file
+        file_name = data_file.replace(".csv", "")
+        file_name = file_name.replace(".txt", "")
+        path_out = path_obj + file_name + "/"
+        try:
+            os.stat(path_out)
+        except:
+            os.mkdir(path_out)
+        f_valid = path_out + file_name + ".valid"
+
+        # create validation set if not exist
+        try:
+            os.stat(f_valid)
+        except:
+            data = read_dataset(path_data + data_file)
+            train, test = separate_datasets_by_time(dataset=data, split_date=split_date)
+            valid, other = generate_validation_split(train=train, perc_split=0.15)
+            valid_to_file(valid, f_valid)
+
+        train_test_to_file(train=other, test=test,
+                           train_out=path_out + file_name + '.train',
+                           test_out=path_out + file_name + '.test')
+
+
+
 if __name__ == '__main__':
 
-    num_folds = 5 
+    ###### Five-fold cross-validation #####
+    '''
+    num_folds = 5
     # st = 'topic_combined_sentiment'
     path = '../data/features/'
     sentiment = False
@@ -178,3 +302,28 @@ if __name__ == '__main__':
             generate_dataset(num_folds=num_folds, st=st, path=path)
             st = "topic_hist_d{}_w{}_cont{}".format(decay, window_size, st_sen)
             generate_dataset(num_folds=num_folds, st=st, path=path)
+
+    '''
+
+    ###### Time based training and testing ######
+
+    path = '../data/features/'
+    params_decay = [0.9, 0.7]
+    params_window_size = [1, 2]
+    split_date = date(2015,6,1)
+
+    for decay in params_decay:
+        for window_size in params_window_size:
+            st = "topic_hist_d{}_w{}".format(decay, window_size)
+            generate_dataset_time(st=st, path=path, split_date=split_date)
+            st = "topic_hist_d{}_w{}_cont".format(decay, window_size)
+            generate_dataset_time(st=st, path=path, split_date=split_date)
+
+    # #test
+    #
+    # data = "/Users/ds/git/financial-topic-modeling/data/features/topic_hist_d0.7_w1/topic_dist_10_hist_d0.7_w1.txt"
+    #
+    # dataset = read_dataset(data)
+    #
+    # separate_datasets_by_time(dataset, date(2015,6,1))
+

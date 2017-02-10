@@ -319,6 +319,7 @@ if __name__ == "__main__":
     # extract topic distribution from raw data
     # structure data into libSVM format
     # ===========================================
+    '''
     path_lda = "../results/lda/"
     path_stocks = "../data/stocks/"
     path_corpus = "../data/lda/"
@@ -334,7 +335,7 @@ if __name__ == "__main__":
         FE.features_topic_dist(f_lda_topic="final.topic",
                                f_corpus="corpus_label.csv",
                                fileout="topic_dist_"+k+".csv")
-
+    '''
 
     # ===========================================
     # generate topic_hist
