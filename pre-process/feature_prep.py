@@ -7,6 +7,7 @@ import re
 import numpy as np
 from parse_stock_files import *
 
+
 class FeatureExtractor:
     """
     extract feature from raw data
@@ -82,8 +83,9 @@ class FeatureExtractor:
             for line in lines[1:]:
                 line = line.strip().split(",")
                 date = line[0]
-                price = line[4]
-                stock_data[(company, date)] = price
+                Open = line[1]
+                Close = line[4]
+                stock_data[(company, date)] = (Open, Close)
 
         files_raw = os.listdir(self.path_stocks+path_raw)
         for file_raw in files_raw:
@@ -99,7 +101,8 @@ class FeatureExtractor:
             line = lines[i].strip().split("\t")
             date = re.sub(r'T.*?Z', '', line[1])
             if (line[0], date) in stock_data:
-                s = line[0] + "," + date + "," + str(i) + "," + stock_data[(line[0], date)]
+                s = line[0] + "," + date + "," + str(i) + "," + ",".join(stock_data[(line[0], date)])
+                print s
                 fout.write(s+"\n")
                 cnt += 1
         fout.close()
@@ -112,24 +115,30 @@ class FeatureExtractor:
             lines = f.readlines()
         fout = open(self.path_corpus+f_label, "w")
         cnt_pos = 0
-        cnt_neg = 1
+        cnt_neg = 0
+        cnt_neu = 0
 
         for i in xrange(len(lines)-1):
             line = lines[i].strip().split(",")
-            line_next = lines[i+1].strip().split(",")
-            if line[0] == line_next[0]:
-                change = float(line_next[-1])/float(line[-1]) - 1.
-                label = significant_change(change*100.)
-            else:
-                label = 0
+
+            change = float(line[4]) / float(line[3]) - 1.
+            change *= 100.
+
+            if abs(change) < 0.7 and abs(change) > 0.2:
+                continue
+
+            label = significant_change_multiclass(change)
+
             if label == 1:
                 cnt_pos += 1
-            else:
+            if label == -1:
                 cnt_neg += 1
+            else:
+                cnt_neu += 1
             fout.write(lines[i].strip()+","+str(label)+"\n")
         fout.write(lines[-1].strip()+",0\n")
         fout.close()
-        print "done!", cnt_pos, "positives and", cnt_neg, "negatives"
+        print "done!", cnt_pos, "positives ", cnt_neg, "negatives ", cnt_neu, "neutal"
 
     def features_topic_dist(self,
                             f_lda_topic="final.topic",
@@ -170,6 +179,7 @@ class FeatureGenerator:
         self.index = []
         self.company = []
         self.labels = []
+        self.dates = []
         self.topic_dist = []
         self.topic_hist = []
 
@@ -192,6 +202,7 @@ class FeatureGenerator:
             record = record.strip().split(",")
             self.index.append(int(record[2]))
             self.company.append(record[0])
+            self.dates.append(record[1])
             self.labels.append(int(record[-1]))
 
     def load_topic_dist(self, f_lda_topic):
@@ -236,7 +247,7 @@ class FeatureGenerator:
             except:
                 os.mkdir(path_out)
             file_out = "{0}topic_dist_{2}_hist_d{1}_w{3}_cont.txt".format(path_out, self.decay, topic_num, self.window_size)
-            self.output_features(features=features, labels=self.labels, file_out=file_out)
+            self.output_features(features=features, labels=self.labels, file_out=file_out, dates=self.dates)
 
             # add
             features = []
@@ -248,7 +259,7 @@ class FeatureGenerator:
             except:
                 os.mkdir(path_out)
             file_out = "{0}topic_dist_{2}_hist_d{1}_w{3}.txt".format(path_out, self.decay, topic_num, self.window_size)
-            self.output_features(features=features, labels=self.labels, file_out=file_out)
+            self.output_features(features=features, labels=self.labels, file_out=file_out, dates=self.dates)
 
     def add_sentiment(self, f_feature, file_out):
         # load features from exsiting file
@@ -279,10 +290,10 @@ class FeatureGenerator:
                 topic_hist += self.topic_dist[idx-idx_w] * (self.decay ** idx_w)
             self.topic_hist.append(topic_hist)
 
-    def output_features(self, features, labels, file_out):
+    def output_features(self, features, labels, file_out, dates):
         fout = open(file_out, "w")
         for i in range(len(features)):
-            s = str(labels[i]) + " "
+            s = str(dates[i]) + " " + str(labels[i]) + " "
             feature = features[i]
             for idx in range(len(feature)):
                 s += str(idx+1) + ":" + str(feature[idx]) + " "
@@ -292,7 +303,6 @@ class FeatureGenerator:
 
 
 if __name__ == "__main__":
-
     '''
     path_lda = "../results/lda_result/"
     path_stocks = "../data/stocks/"
@@ -309,7 +319,6 @@ if __name__ == "__main__":
     # extract topic distribution from raw data
     # structure data into libSVM format
     # ===========================================
-    """
     path_lda = "../results/lda/"
     path_stocks = "../data/stocks/"
     path_corpus = "../data/lda/"
@@ -325,7 +334,6 @@ if __name__ == "__main__":
         FE.features_topic_dist(f_lda_topic="final.topic",
                                f_corpus="corpus_label.csv",
                                fileout="topic_dist_"+k+".csv")
-    """
 
 
     # ===========================================

@@ -7,11 +7,22 @@ stock_folder = 'data/stock-prices/'
 company_stock_file = 'data/company-stock-mapping.csv'
 output_file = 'data/stock-data.csv'
 sig_perc = 2
+sig_perc_multic = 1
 
 
 def significant_change(x):
     if abs(x) >= sig_perc:
         return 1
+    else:
+        return 0
+
+
+def significant_change_multiclass(x):
+    if abs(x) >= sig_perc_multic:
+        if x > 0:
+            return 1
+        else:
+            return -1
     else:
         return 0
 
@@ -30,7 +41,7 @@ if __name__ == '__main__':
 
     stock_data = pd.DataFrame(columns=['Date', 'Company', 'Change_per_1', 'sig?'])
 
-    print stock_data
+    # print stock_data
 
     for stock_file in listdir(stock_folder):
         company = re.sub(r'.*_', '', stock_file)
@@ -47,11 +58,13 @@ if __name__ == '__main__':
 
         df['sig?'] = df.apply(lambda row: significant_change(row['Change_per_1']), axis=1)
 
+        df['sig_mc?'] = df.apply(lambda row: significant_change_multiclass(row['Change_per_1']), axis=1)
+
         df['Company'] = df.apply(lambda row: cs_dict[company], axis=1)
 
-        print df[:10]
+        # print df[:10]
 
-        stock_data = stock_data.append(df[['Date', 'Company', 'Change_per_1', 'sig?']], ignore_index=True)
+        stock_data = stock_data.append(df[['Date', 'Company', 'Close_1', 'Change_per_1', 'sig?', 'sig_mc?']], ignore_index=True)
 
     print stock_data[:10]
 
