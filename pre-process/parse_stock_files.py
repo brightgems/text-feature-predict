@@ -10,6 +10,23 @@ sig_perc = 2
 sig_perc_multic = 1
 
 
+def significant_change(x):
+    if abs(x) >= sig_perc:
+        return 1
+    else:
+        return 0
+
+
+def significant_change_multiclass(x):
+    if abs(x) >= sig_perc_multic:
+        if x > 0:
+            return 1
+        else:
+            return -1
+    else:
+        return 0
+
+
 def company_stock_dictionary(path):
     with open(path) as f:
         f.readline()  # ignore first line (header)
