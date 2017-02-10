@@ -12,7 +12,7 @@ import nltk
 from operator import itemgetter
 import cPickle as pkl
 
-from clean_str import clean_str_sen
+from clean_str import clean_str
 
 def extract_docs(path_in, path_out):
     """
@@ -103,9 +103,19 @@ def extract_doc_compary(doc_info, doc_contents, f_output):
 
     document_output.close()
 
+def prep_baseline(f_corpus_raw, f_label, f_out):
+    """
+    prepare corpus for baseline feature extraction
+    :param f_corpus_raw: {company name, date, documents}
+    :param f_label:
+    :param f_out:
+    :return:
+    """
+    corpus_raw = open(f_corpus_raw, "r")
+    label = open(f_label)
 
 class lda_prep:
-    def __init__(self, path_in, path_out, vocab_size=100000, stop_words=False):
+    def __init__(self, path_in, path_out, vocab_size=50000, stop_words=False):
         self.path_in = path_in
         self.path_out = path_out
         self.stop_words = stop_words
@@ -145,20 +155,15 @@ class lda_prep:
 
         for line in lines:
             line = line.strip().split("\t") # date, doc_content
-            content = clean_str_sen(line[1])
+            content = clean_str(line[1])
             if len(content) == 0:
                 continue
             tokens = nltk.word_tokenize(content.decode('utf-8')) # tokenize
             for token in tokens:
-                # generate vocab
-                '''
-                if "EOS" in token:
-                    continue
-                '''
                 self.wordList[token] += 1
             self.total_words_cnt += len(tokens)
             self.collections.append([company_name, line[0], tokens])
-        print "done! corpus size:", len(lines)
+        print "done! corpus size:", len(lines), "total word count:", self.total_words_cnt
 
     def prep_vocab(self):
         """
@@ -181,7 +186,7 @@ class lda_prep:
         print "done!"
         print "unique words:", len(self.wordList)
         print "vocab size:", len(self.vocab)
-        print "frequency converage:", freq_cov / self.total_words_cnt
+        print "frequency converage:", float(freq_cov) / self.total_words_cnt
 
     def comb_docs(self, fout_name='corpus_raw.txt'):
         print "combing docs for different companies ...",

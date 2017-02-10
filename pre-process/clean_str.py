@@ -42,7 +42,7 @@ def clean_str_sen(string):
     string = re.sub(r"can\'t", " cannot", string, flags=re.I)
     string = re.sub(r"n\'t", " not", string, flags=re.I)
     string = re.sub(r"\'m", " am", string, flags=re.I)
-    string = re.sub(r"\'s", " is", string, flags=re.I)
+    string = re.sub(r"\'s", " has", string, flags=re.I)
     string = re.sub(r"\.", " <EOS>", string, flags=re.I)
     string = re.sub(r"\?", " <EOS>", string, flags=re.I)
     string = re.sub(r"\!", " <EOS>", string, flags=re.I)

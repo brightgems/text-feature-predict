@@ -117,3 +117,4 @@ class FeatureExtracor:
         _output("{}/{}.{}".format(path_feature, feature, "test"), set="test")
         if len(self.x_valid) > 0:
             _output("{}/{}.{}".format(path_feature, feature, "valid"), set="valid")
+
