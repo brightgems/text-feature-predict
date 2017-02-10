@@ -14,7 +14,6 @@ import cPickle as pkl
 
 from clean_str import clean_str_sen
 
-
 def extract_docs(path_in, path_out):
     """
     extract (and merge) all crawled documents in the given path
@@ -32,13 +31,15 @@ def extract_docs(path_in, path_out):
     companies = []
 
     for f in files:
-        if "json.txt" in f:
-            company = f.replace("-json.txt", "").split("_")[-1]
+        if "json" in f:
+            company = f.split("-json")[0].split("_")[-1]
             f_json[company].append(f)
             companies.append(company)
-        if "text.tsv" in f:
-            company = f.replace("-text.tsv", "").split("_")[-1]
+        elif "text" in f:
+            company = f.split("-text")[0].split("_")[-1]
             f_text[company].append(f)
+        else:
+            print "unrecognized file:", f
     companies = list(set(companies))
 
     for company in companies:
@@ -140,7 +141,7 @@ class lda_prep:
         with open(self.path_in+fin_name, "r") as f:
             lines = f.readlines()
         company_name = fin_name.replace(".tsv", "").split("-")[-1]
-        print company_name, "..."
+        print company_name, "...",
 
         for line in lines:
             line = line.strip().split("\t") # date, doc_content
@@ -221,7 +222,8 @@ if __name__ == "__main__":
     path_extracted = '../../data/extracted/'
     path_lda = '../../data/lda/'
 
-    extract_docs(path_in=path_raw, path_out=path_extracted)
-    # data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
-    # data_prep.comb_docs(fout_name="corpus-raw.txt")
-    # data_prep.prep_doc_term()
+    # extract_docs(path_in=path_raw, path_out=path_extracted)
+
+    data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
+    data_prep.comb_docs(fout_name="corpus-raw.txt")
+    data_prep.prep_doc_term()
