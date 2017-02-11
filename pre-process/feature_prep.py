@@ -4,15 +4,18 @@ prepare features for classifier
 
 import os
 import re
+import random
 import numpy as np
 from parse_stock_files import *
+from datetime import date
+from data_separate import to_date
 
 
 class FeatureExtractor:
     """
     extract feature from raw data
     """
-    def __init__(self, path_lda, path_stocks, path_corpus, path_features):
+    def __init__(self, path_lda, path_stocks, path_corpus, path_features, split_date=date(2015,6,1), perc_val=0.15):
         self.path_lda = path_lda # path to lda results
         self.path_stocks = path_stocks # path to stock data
         self.path_corpus = path_corpus # path to NYT corpus
@@ -33,6 +36,11 @@ class FeatureExtractor:
             os.stat(self.path_corpus+"corpus_label.csv")
         except:
             self.generate_label()
+
+        try:
+            os.stat(self.path_corpus+"corpus_split.csv")
+        except:
+            self.separate_train_test_validation(split_date, perc_val)
 
         # self.features_topic_dist()
 
@@ -139,6 +147,56 @@ class FeatureExtractor:
         fout.write(lines[-1].strip()+",0\n")
         fout.close()
         print "done!", cnt_pos, "positives ", cnt_neg, "negatives ", cnt_neu, "neutal"
+
+
+    def separate_train_test_validation(self, split_date, perc_val, f_label="corpus_label.csv", f_split="corpus_split.csv"):
+        '''
+        Format:
+        Company, Date, Id, Open, Close, Label, Dataset
+
+        :param split_date: Date for splitting training and testing
+        :param perc_val: Percentage value (< 1) of testing data that will be used as validation set
+        :param f_label: Path to croups label file
+        :param f_split: Output
+        '''
+
+        print "Splitting dataset on date: {}...".format(str(split_date))
+
+        with open(self.path_corpus+f_label, "r") as f:
+            lines = f.readlines()
+
+        fout = open(self.path_corpus+f_split, "w")
+
+        train = []
+        test = []
+
+        for line in lines:
+            if to_date(line.split(',')[1]) <= split_date:
+                train.append(line)
+            else:
+                test.append(line)
+
+        validation = []
+
+        random.shuffle(train)
+
+        for i in range(int(len(train) * perc_val)):
+            validation.append(train.pop())
+
+        for line in lines:
+            data_set_id = -1
+
+            if line in train:
+                data_set_id = 0
+            elif line in test:
+                data_set_id = 1
+            elif line in validation:
+                data_set_id = 2
+
+            fout.write(line.strip() + ",{}\n".format(str(data_set_id)))
+
+        print "done!"
+
 
     def features_topic_dist(self,
                             f_lda_topic="final.topic",
@@ -319,7 +377,7 @@ if __name__ == "__main__":
     # extract topic distribution from raw data
     # structure data into libSVM format
     # ===========================================
-    '''
+
     path_lda = "../results/lda/"
     path_stocks = "../data/stocks/"
     path_corpus = "../data/lda/"
@@ -335,7 +393,7 @@ if __name__ == "__main__":
         FE.features_topic_dist(f_lda_topic="final.topic",
                                f_corpus="corpus_label.csv",
                                fileout="topic_dist_"+k+".csv")
-    '''
+
 
     # ===========================================
     # generate topic_hist
