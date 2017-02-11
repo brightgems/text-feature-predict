@@ -1,3 +1,8 @@
+"""
+batch tune for cross-validation with multi-sampling
+previous
+"""
+
 from tune_params_svm import *
 
 import os
