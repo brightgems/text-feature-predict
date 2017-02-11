@@ -197,7 +197,6 @@ class FeatureExtractor:
 
         print "done!"
 
-
     def features_topic_dist(self,
                             f_lda_topic="final.topic",
                             f_corpus="corpus_label.csv",
@@ -237,7 +236,6 @@ class FeatureGenerator:
         self.index = []
         self.company = []
         self.labels = []
-        self.dates = []
         self.topic_dist = []
         self.topic_hist = []
 
@@ -260,7 +258,6 @@ class FeatureGenerator:
             record = record.strip().split(",")
             self.index.append(int(record[2]))
             self.company.append(record[0])
-            self.dates.append(record[1])
             self.labels.append(int(record[-1]))
 
     def load_topic_dist(self, f_lda_topic):
@@ -305,7 +302,7 @@ class FeatureGenerator:
             except:
                 os.mkdir(path_out)
             file_out = "{0}topic_dist_{2}_hist_d{1}_w{3}_cont.txt".format(path_out, self.decay, topic_num, self.window_size)
-            self.output_features(features=features, labels=self.labels, file_out=file_out, dates=self.dates)
+            self.output_features(features=features, labels=self.labels, file_out=file_out)
 
             # add
             features = []
@@ -317,7 +314,7 @@ class FeatureGenerator:
             except:
                 os.mkdir(path_out)
             file_out = "{0}topic_dist_{2}_hist_d{1}_w{3}.txt".format(path_out, self.decay, topic_num, self.window_size)
-            self.output_features(features=features, labels=self.labels, file_out=file_out, dates=self.dates)
+            self.output_features(features=features, labels=self.labels, file_out=file_out)
 
     def add_sentiment(self, f_feature, file_out):
         # load features from exsiting file
@@ -348,10 +345,10 @@ class FeatureGenerator:
                 topic_hist += self.topic_dist[idx-idx_w] * (self.decay ** idx_w)
             self.topic_hist.append(topic_hist)
 
-    def output_features(self, features, labels, file_out, dates):
+    def output_features(self, features, labels, file_out):
         fout = open(file_out, "w")
         for i in range(len(features)):
-            s = str(dates[i]) + " " + str(labels[i]) + " "
+            s = str(labels[i]) + " "
             feature = features[i]
             for idx in range(len(feature)):
                 s += str(idx+1) + ":" + str(feature[idx]) + " "
@@ -382,6 +379,7 @@ if __name__ == "__main__":
     path_stocks = "../data/stocks/"
     path_corpus = "../data/lda/"
     path_features = "../data/features/"
+    split_date = date(2015,6,1)
 
     folders = os.listdir(path_lda)
     for folder in folders:
@@ -389,7 +387,8 @@ if __name__ == "__main__":
         FE = FeatureExtractor(path_lda=path_lda+folder+"/",
                               path_stocks=path_stocks,
                               path_corpus=path_corpus,
-                              path_features=path_features)
+                              path_features=path_features,
+                              split_date=split_date)
         FE.features_topic_dist(f_lda_topic="final.topic",
                                f_corpus="corpus_label.csv",
                                fileout="topic_dist_"+k+".csv")
@@ -398,7 +397,7 @@ if __name__ == "__main__":
     # ===========================================
     # generate topic_hist
     # ===========================================
-    '''
+
     path_lda = "../results/lda/"
     path_features = "../data/features/"
     f_corpus = "../data/lda/corpus_label.csv"
@@ -410,7 +409,7 @@ if __name__ == "__main__":
             FG = FeatureGenerator(path_features=path_features, path_lda=path_lda, f_corpus=f_corpus,
                                   decay=decay, window_size=window_size)
             FG.generate_topic_hist()
-    '''
+
 
     # ===========================================
     # add sentiment features
