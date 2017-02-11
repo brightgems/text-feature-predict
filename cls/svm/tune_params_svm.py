@@ -44,10 +44,10 @@ if __name__=="__main__":
     valid_file = sys.argv[2]
     scale = len(sys.argv) >= 4 and sys.argv[3] == '1' # whether to scale
     if len(sys.argv) >= 5:
-        print "using kernel:", kernel_name[int(sys.argv[4])]
+        print "\tusing kernel:", kernel_name[int(sys.argv[4])]
         svm_kernels = [int(sys.argv[4])] # set kernel
     else:
-        print "using default kernel candidate:", kernels
+        print "\tusing default kernel candidate:", kernels
         svm_kernels = kernels
 
     try:
@@ -58,7 +58,7 @@ if __name__=="__main__":
     fout = open(final_result_output, 'w')
 
     if scale:
-        print "using scale"
+        print "\tusing scale"
         scale_paras = ' -s train.scale.para {0} > train.scale'.format(train_file)
         execute(svm_scale + scale_paras)
         scale_paras = ' -r train.scale.para {0} > valid.scale'.format(valid_file)
@@ -100,8 +100,8 @@ if __name__=="__main__":
                     best_model["accu"] = accu
                     best_model["kernel"] = kernel
                     best_model["c"] = c
-    print "Best model: Kernel:{0}, C:{1}, Gamma:{2}, Accuracy:{3}\n".format(best_model["kernel"],
-                                                                            best_model["c"], best_model["g"],
-                                                                            best_model["accu"])
+    print "\tBest model: Kernel:{0}, C:{1}, Gamma:{2}, Accuracy:{3}\n".format(best_model["kernel"],
+                                                                              best_model["c"], best_model["g"],
+                                                                              best_model["accu"])
     fout.close()
 
