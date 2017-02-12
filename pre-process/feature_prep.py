@@ -183,19 +183,29 @@ class FeatureExtractor:
         for i in range(int(len(train) * perc_val)):
             validation.append(train.pop())
 
+        num_train = 0
+        num_test = 0
+        num_val = 0
+
         for line in lines:
             data_set_id = -1
 
             if line in train:
                 data_set_id = 0
+                num_train += 1
             elif line in test:
                 data_set_id = 1
+                num_test += 1
             elif line in validation:
                 data_set_id = 2
+                num_val += 1
 
             fout.write(line.strip() + ",{}\n".format(str(data_set_id)))
 
-        print "done!"
+        total = 0.0 + num_val + num_test + num_train
+
+        print "done! {}% training instances, {}% test instances, {}% validation instances."\
+            .format(num_train/total, num_test/total, num_val/total)
 
     def features_topic_dist(self,
                             f_lda_topic="final.topic",
@@ -238,6 +248,7 @@ class FeatureGenerator:
         self.labels = []
         self.topic_dist = []
         self.topic_hist = []
+        self.topic_change = []
 
         self.sentiment = []
         self.index_sentiment = []
@@ -316,6 +327,28 @@ class FeatureGenerator:
             file_out = "{0}topic_dist_{2}_hist_d{1}_w{3}.txt".format(path_out, self.decay, topic_num, self.window_size)
             self.output_features(features=features, labels=self.labels, file_out=file_out)
 
+
+    def generate_topic_change(self):
+        for folder in os.listdir(self.path_lda):
+            if "lda_result" not in folder:
+                continue
+            topic_num = folder.split("_")[-1]
+            self.load_topic_dist(f_lda_topic=self.path_lda + folder + "/final.topic")
+            self.feature_topic_change()
+
+            features = []
+            for idx in range(len(self.topic_change)):
+                features.append(list(self.topic_dist[idx]) + list(self.topic_change[idx]))
+            path_out = "{0}topic_change/".format(self.path_features)
+            try:
+                os.stat(path_out)
+            except:
+                os.mkdir(path_out)
+            file_out = "{0}topic_change_{1}.txt".format(path_out, topic_num)
+            self.output_features(features=features, labels=self.labels, file_out=file_out)
+
+
+
     def add_sentiment(self, f_feature, file_out):
         # load features from exsiting file
         with open(self.path_features+f_feature, "r") as f:
@@ -344,6 +377,17 @@ class FeatureGenerator:
                     continue
                 topic_hist += self.topic_dist[idx-idx_w] * (self.decay ** idx_w)
             self.topic_hist.append(topic_hist)
+
+    def feature_topic_change(self):
+        self.topic_change = []
+        for idx in range(len(self.topic_dist)):
+            topic_change = self.topic_dist[idx]
+            if idx-1 < 0:
+                continue
+            if self.company[idx-1] != self.company[idx]:
+                continue
+            topic_change -= self.topic_dist[idx-1]
+            self.topic_change.append(topic_change)
 
     def output_features(self, features, labels, file_out):
         fout = open(file_out, "w")
@@ -379,8 +423,9 @@ if __name__ == "__main__":
     path_stocks = "../data/stocks/"
     path_corpus = "../data/lda/"
     path_features = "../data/features/"
-    split_date = date(2015,6,1)
-
+    split_date = date(2015,6,1)  # old dataset
+    #split_date = date(2015,11,1)  # new dataset
+    '''
     folders = os.listdir(path_lda)
     for folder in folders:
         k = folder.split("_")[-1]
@@ -392,10 +437,10 @@ if __name__ == "__main__":
         FE.features_topic_dist(f_lda_topic="final.topic",
                                f_corpus="corpus_label.csv",
                                fileout="topic_dist_"+k+".csv")
-
+    '''
 
     # ===========================================
-    # generate topic_hist
+    # generate topic_hist, topic_change
     # ===========================================
 
     path_lda = "../results/lda/"
@@ -409,6 +454,7 @@ if __name__ == "__main__":
             FG = FeatureGenerator(path_features=path_features, path_lda=path_lda, f_corpus=f_corpus,
                                   decay=decay, window_size=window_size)
             FG.generate_topic_hist()
+            FG.generate_topic_change()
 
 
     # ===========================================
