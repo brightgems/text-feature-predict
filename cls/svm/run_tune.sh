@@ -16,3 +16,5 @@ do
         python tune_params_svm.py $train_file $valid_file 1 $kernel
     done
 done
+
+rm -f rbf.model.tune valid.scale train.scale train.scale.para valid_predict.output
