@@ -59,17 +59,18 @@ if __name__=="__main__":
 
     if scale:
         print "\tusing scale"
-        scale_paras = ' -s train.scale.para {0} > train.scale'.format(train_file)
+        scale_paras = ' -s {0}.scale.para {0} > {0}.scale'.format(train_file)
         execute(svm_scale + scale_paras)
-        scale_paras = ' -r train.scale.para {0} > valid.scale'.format(valid_file)
+        scale_paras = ' -r {0}.scale.para {1} > {1}.scale'.format(train_file, valid_file)
         execute((svm_scale + scale_paras))
-        train_file = 'train.scale'
-        valid_file = 'valid.scale'
+        train_file = '{0}.scale'.format(train_file)
+        valid_file = '{0}.scale'.format(valid_file)
 
     best_model = {"accu": 0.0, "kernel": -1, "c": -1, "g": -1}
 
     for kernel in svm_kernels:
-        model_file = kernel_name[kernel]+'.model.tune'
+        model_file = valid_file + ".model"
+        output_file = valid_file + ".output"
         if kernel == 2: # tune both c and g
             for c in Cparas:
                 for g in Gparas:
@@ -77,7 +78,7 @@ if __name__=="__main__":
                     fout.write('Kernel:{0}, C paras:{1}, Gamma:{2}'.format(kernel_name[kernel], c, g))
                     train_paras = ' -s 0 -t {0} -c {1} -g {2} -q {3} {4}'.format(kernel, c, g, train_file, model_file)
                     execute(liblinear_train + train_paras)
-                    valid_paras = ' {0} {1} valid_predict.output'.format(valid_file, model_file)
+                    valid_paras = ' {0} {1} {2}'.format(valid_file, model_file, output_file)
                     result = execute(liblinear_test + valid_paras, False)
                     fout.write(result)
                     accu = parse_result(result)
@@ -92,7 +93,7 @@ if __name__=="__main__":
                 fout.write('Kernel:{0}, C paras:{1} '.format(kernel_name[kernel], c))
                 train_paras = ' -s 0 -t {0} -c {1} -q {2} {3}'.format(kernel, c, train_file, model_file)
                 execute(liblinear_train + train_paras)
-                valid_paras = ' {0} {1} valid_predict.output'.format(valid_file, model_file)
+                valid_paras = ' {0} {1} {2}'.format(valid_file, model_file, output_file)
                 result = execute(liblinear_test + valid_paras, False)
                 fout.write(result)
                 accu = parse_result(result)
