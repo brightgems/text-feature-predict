@@ -418,14 +418,14 @@ if __name__ == "__main__":
     # extract topic distribution from raw data
     # structure data into libSVM format
     # ===========================================
-
+    '''
     path_lda = "../results/lda/"
     path_stocks = "../data/stocks/"
     path_corpus = "../data/lda/"
     path_features = "../data/features/"
     split_date = date(2015,6,1)  # old dataset
     #split_date = date(2015,11,1)  # new dataset
-    '''
+
     folders = os.listdir(path_lda)
     for folder in folders:
         k = folder.split("_")[-1]
