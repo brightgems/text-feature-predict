@@ -34,7 +34,7 @@ do
         echo $folder;
         train_file=$folder/$(basename $folder)".train"
         valid_file=$folder/$(basename $folder)".valid"
-        #python tune_params_svm.py $train_file $valid_file 1 $kernel
+        python tune_params_svm.py $train_file $valid_file 1 $kernel
         rm -f "$train_file.scale.para" "$train_file.scale" "$valid_file.scale" "$valid_file.scale.model" "$valid_file.scale.output"
     done
 done
