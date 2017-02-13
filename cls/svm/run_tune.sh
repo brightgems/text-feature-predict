@@ -4,7 +4,6 @@ kernel=2 # use rbf kernel (for topic modeling)
 # kernel=0 # use linear kernel (for bow/tfidf baseline)
 
 tune_folder=$1
-echo $tune_folder
 IFS=';' read -ra folders <<< $tune_folder
 
 path_in="/home/yiren/Documents/time-series-predict/data/test"
