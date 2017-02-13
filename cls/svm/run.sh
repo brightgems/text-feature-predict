@@ -1,58 +1,48 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-classifer() {
-    ststart="topic_dist"
-    kernel=2 # ['linear', 'polynomial', 'rbf', 'sigmoid']
-    c=1024
-    #t=15
+tune_log=$1
+path="/home/yiren/Documents/time-series-predict/data/test/"
+ [ -d "results/" ] || mkdir -p "results/"
 
-    st=$1
-    stend=$2
-    t=$3
+while IFS= read -r line
+do
+    IFS= read -r feature
+    if [ ! $feature ]
+    then
+        break
+    fi
+    IFS= read -r line
+    IFS= read -r line
+    IFS= read -r model
 
-    path="../../../data/features/cross_validation"
-    filename="${ststart}_${t}${stend}"
-    data_path="$path/${st}/$filename"
-    echo $data_path
-    obj_path="results/${st}.t${t}"
+    # read best params from tuning log
+    IFS=', ' read -r -a params <<< $model
+    IFS=':' read -r -a kernel <<< ${params[2]}
+    kernel=${kernel[1]}
+    IFS=':' read -r -a c <<< ${params[3]}
+    c=${c[1]}
+    IFS=':' read -r -a g <<< ${params[4]}
+    g=${g[1]}
 
-    [ -d $obj_path ] || mkdir -p $obj_path
+    echo "training for" $feature, kernel:$kernel, c:$c, g:$g
 
-    train_scaled="$obj_path/train.scaled"
-    test_scaled="$obj_path/test.scaled"
+    # todo: may need parsing here
+    upper_folder=$feature
 
-    echo "C-SVM with kernel $kernel and C=$c (tuned on dev set)"
+    train_path=$path/$upper_folder/$feature/
+    obj_path="results/"$upper_folder/$feature
+     [ -d $obj_path ] || mkdir -p $obj_path
 
-    for s in 0 1 2 3 4
-    do
-        echo ""
-        for k in 0 1 2 3 4
-        do
-            train_file="$data_path/$s/$filename.train.s$s.k$k"
-            test_file="$data_path/$s/$filename.test.s$s.k$k"
-            model="$obj_path/model.t$t.s$s.k$k"
-            output="$obj_path/output.t$t.s$s.k$k"
+    train_file=$train_path/$feature".train"
+    test_file=$train_path/$feature".test"
+    model="$obj_path/model.$feature"
+    output="$obj_path/output.$feature"
 
-            #echo "cross validation on partition $idx"
-            ./svm-scale -s "$obj_path/train.scale.para" "$train_file" > "$train_scaled"
-            ./svm-scale -r "$obj_path/train.scale.para" "$test_file" > "$test_scaled"
-            ./svm-train -s 0 -t $kernel -c $c -q "$train_scaled" "$model"
-            ./svm-predict "$test_scaled" "$model" "$output.txt"
-        done
-    done
+    ./svm-scale -s "$obj_path/train.scale.para" "$train_file" > "$train_file.scaled"
+    ./svm-scale -r "$obj_path/train.scale.para" "$test_file" > "$test_file.scaled"
+    ./svm-train -s 0 -t $kernel -c $c -g $g -q "$train_file.scaled" "$model"
+    ./svm-predict "$test_file.scaled" "$model" "$output"
 
     echo ""
-}
 
-
-for t in 10 15 20 25 30 35 40 45 50
-do 
-    echo "topic number: $t"
-    classifer "topic_dist" "" $t
-    classifer "topic_sentiment" "_sentiment" $t
-    classifer "topic_change" "_change" $t
-    classifer "topic_change_sentiment" "_change_sentiment" $t
-    classifer "topic_combined" "_combined" $t
-    classifer "topic_combined_sentiment" "_combined_sentiment" $t
-    echo ""
-done
+done < "$tune_log"
