@@ -91,39 +91,6 @@ def k_fold_datasets(positive, negative, k):
 
     return train, test
 
-# def separate_datasets_by_time(dataset, split_date):
-#     '''
-#     Splits the dataset into train and test according to the
-#     parameter split_date
-#
-#     :param dataset: A list of DataPoint
-#     :param split_date: The date to be split. Instances smaller or
-#     equal to split_date will be part of the train set. Instances larger
-#     than split_date will be part of the test set
-#     :return: Training and test sets
-#     '''
-#
-#     train = []
-#     test = []
-#     num_train = 0
-#     num_test = 0
-#
-#     for datapoint in dataset:
-#         if datapoint.timepoint <= split_date:
-#             train.append(datapoint)
-#             num_train += 1
-#         else:
-#             test.append(datapoint)
-#             num_test += 1
-#
-#     size_of_datasets = float(len(train) + len(test))
-#    # print "Dataset separated by time. {}% train, {}% test"\
-#     #     .format(len(train) / size_of_datasets, len(test) / size_of_datasets)
-#
-#     return train, test
-
-
-
 
 def train_test_to_file(train, test, train_out, test_out):
     tro = open(train_out, 'w')
@@ -151,27 +118,6 @@ def valid_to_file(valid, valid_out):
             tvo.write('{}:{} '.format(feature, value))
         tvo.write('\n')
     tvo.close()
-
-
-# def generate_validation_split(train, perc_split):
-#     '''
-#     Takes per_split percent data from the training set to create
-#     the validation set
-#
-#     :param train: The training set
-#     :param perc_split: The percentage of the number of points you want
-#         to take from training (0.3 = 30%)
-#     :return: training and validation sets
-#     '''
-#
-#     random.shuffle(train)
-#
-#     valid = []
-#
-#     for i in range(0, int(len(train) * perc_split)):
-#         valid.append(train.pop())
-#
-#     return valid, train
 
 
 def generate_validation(positive, negative, k=6):
@@ -239,50 +185,38 @@ def generate_dataset(num_folds, st, path):
                                    path_cross + file_name + '.test.s{}.k{}'.format(k, i))
 
 
-# def generate_dataset_time(st, path, split_date):
-#     path_data = path + st + '/'
-#     path_time = path + 'time/'
-#     path_obj = path_time + st + '/'
-#
-#     try:
-#         os.stat(path_time)
-#     except:
-#         os.mkdir(path_time)
-#
-#     try:
-#         os.stat(path_obj)
-#     except:
-#         os.mkdir(path_obj)
-#
-    # for data_file in os.listdir(path_data):
-    #     print "generation training data for", data_file
-    #     file_name = data_file.replace(".csv", "")
-    #     file_name = file_name.replace(".txt", "")
-    #     path_out = path_obj + file_name + "/"
-    #     try:
-    #         os.stat(path_out)
-    #     except:
-    #         os.mkdir(path_out)
-    #     f_valid = path_out + file_name + ".valid"
-    #
-    #     # create validation set if not exist
-    #     try:
-    #         os.stat(f_valid)
-#         except:
-#             data = read_dataset(path_data + data_file)
-#             train, test = separate_datasets_by_time(dataset=data, split_date=split_date)
-#             valid, other = generate_validation_split(train=train, perc_split=0.15)
-#             valid_to_file(valid, f_valid)
-#
-#         train_test_to_file(train=other, test=test,
-#                            train_out=path_out + file_name + '.train',
-#                            test_out=path_out + file_name + '.test')
+def oversample(dataset):
+    pos = []
+    neg = []
+    neu = []
+
+    for datapoint in dataset:
+        if datapoint.label == 1:
+            pos.append(datapoint)
+        elif datapoint.label == -1:
+            neg.append(datapoint)
+        elif datapoint.label == 0:
+            neu.append(datapoint)
+        else:
+            print "ERROR: No label for datapoint: ", datapoint
+
+    while len(pos) < len(neu):
+        pos.append(pos[random.randint(0, len(pos)-1)])
+
+    while len(neg) < len(neu):
+        neg.append(neg[random.randint(0, len(neg)-1)])
+
+    # add all datapoints together into 'pos'
+    pos.extend(neg)
+    pos.extend(neu)
+
+    return pos
 
 
-def generate_dataset_split(st, path, corpus_split):
-    path_data = path + st + '/'
-    path_time = path + 'time/'
-    path_obj = path_time + st + '/'
+def generate_dataset_split(batch_name, features_root, corpus_split, oversampling=False):
+    path_data = features_root + batch_name + '/'
+    path_time = features_root + 'time/'
+    path_obj = path_time + batch_name + '/'
 
 
     try:
@@ -298,9 +232,7 @@ def generate_dataset_split(st, path, corpus_split):
     with open(corpus_split, "r") as f:
         split_info = f.readlines()
 
-    train = []
-    test = []
-    valid = []
+
 
     for data_file in os.listdir(path_data):
         print "generation training data for", data_file
@@ -313,9 +245,13 @@ def generate_dataset_split(st, path, corpus_split):
         except:
             os.mkdir(path_out)
 
-        f_valid = path_out + file_name + ".valid"
 
         data = read_dataset(path_data + data_file)
+
+        train = []
+        test = []
+        valid = []
+
         for datapoint in data:
             dataset = int(split_info[datapoint.index].strip().split(',')[6])
             if dataset == 0:
@@ -327,6 +263,12 @@ def generate_dataset_split(st, path, corpus_split):
             else:
                 print "ERROR: No dataset could be found for datapoint: {}".format(str(datapoint))
 
+        if oversampling:
+            train = oversample(train)
+            test = oversample(test)
+            valid = oversample(valid)
+
+        f_valid = path_out + file_name + ".valid"
         try:
             os.stat(f_valid)
         except:
@@ -388,8 +330,10 @@ if __name__ == '__main__':
     for decay in params_decay:
         for window_size in params_window_size:
             st = "topic_hist_d{}_w{}".format(decay, window_size)
-            generate_dataset_split(st=st, path=path, corpus_split=corpus_split)
+            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
             st = "topic_hist_d{}_w{}_cont".format(decay, window_size)
-            generate_dataset_split(st=st, path=path, corpus_split=corpus_split)
+            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
+            st = "topic_change"
+            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
 
 
