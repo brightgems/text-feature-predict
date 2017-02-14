@@ -13,7 +13,9 @@ def calculate_metrics(datapoints):
 
     p_avg = 0.0
     r_avg = 0.0
-    f1_avg = 0.0
+    f1 = 0.0
+    f05 = 0.0
+    f2 = 0.0
 
     num_classes = len(cm[0])
 
@@ -22,9 +24,7 @@ def calculate_metrics(datapoints):
 
         precision = 0.0
         recall = 0.0
-        f1 = 0.0
-        f05 = 0.0
-        f2 = 0.0
+
         specificity = 0.0
 
         if tp + fn > 0:
@@ -36,22 +36,20 @@ def calculate_metrics(datapoints):
         if fp + tn > 0:
             specificity = tn / float(fp + tn)
 
-        if precision + recall > 0:
-            f1 = float(2 * ((precision * recall) / (precision + recall)))
-            f05 = calculate_f_beta(precision, recall, 0.5)
-            f2 = calculate_f_beta(precision, recall, 2)
-
         p_avg += precision
         r_avg += recall
-        f1_avg += f1
-
-    accuracy = calculate_accuracy(cm)
 
     p_avg /= num_classes
     r_avg /= num_classes
-    f1_avg /= num_classes
 
-    return p_avg, r_avg, f1_avg, accuracy
+    if p_avg + r_avg > 0:
+        f1 = calculate_f_beta(p_avg, r_avg, 1)
+        f05 = calculate_f_beta(p_avg, r_avg, 0.5)
+        f2 = calculate_f_beta(p_avg, r_avg, 2)
+
+    accuracy = calculate_accuracy(cm)
+
+    return p_avg, r_avg, f1, accuracy
 
 
 def generate_confusion_matrix(datapoints, show=False):
