@@ -28,7 +28,7 @@ def read_dataset(path):
     for i, line in enumerate(f.readlines()):
         line = line.replace('\n', '')
         splits = line.split()
-        label = int(splits[0])
+        label = float(splits[0])
         values = dict()
         for split in splits[1:]:
             feature = int(split.split(':')[0])
@@ -322,18 +322,20 @@ if __name__ == '__main__':
     ###### Use train, test, val split from corpus_split.csv #####
 
     path = '../data/features/'
-    corpus_split = '../data/lda/corpus_split.csv'
-    params_decay = [0.9, 0.7]
-    params_window_size = [1, 2]
+    corpus_split = '../data/lda/corpus_split_regression.csv'
+    oversampling = False
+    params_decay = [1, 0.9, 0.8, 0.7]
+    params_window_size = [1, 2, 3, 4, 5, 6]
 
+    st = "topic_change"
+    generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=oversampling)
 
     for decay in params_decay:
         for window_size in params_window_size:
             st = "topic_hist_d{}_w{}".format(decay, window_size)
-            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
+            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=oversampling)
             st = "topic_hist_d{}_w{}_cont".format(decay, window_size)
-            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
-            st = "topic_change"
-            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
+            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=oversampling)
+
 
 

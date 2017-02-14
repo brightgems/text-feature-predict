@@ -21,6 +21,9 @@ class FeatureExtractor:
         self.path_corpus = path_corpus # path to NYT corpus
         self.path_features = path_features # path to feature-file (libsvm style)
         self.topic_distribution = []
+        self.significance_treshold = 1 # percentage of sigificance treshold
+        self.significance_buffer_upper = 0.7 # upper threshold of significance buffer
+        self.significance_buffer_lower = 0.2 # lower threshold of significance buffer
 
         try:
             os.stat(self.path_lda+"final.topic")
@@ -33,12 +36,12 @@ class FeatureExtractor:
             self.merge_corpus()
 
         try:
-            os.stat(self.path_corpus+"corpus_label.csv")
+            os.stat(self.path_corpus+"corpus_label_regression.csv")
         except:
-            self.generate_label()
+            self.generate_label_regression()
 
         try:
-            os.stat(self.path_corpus+"corpus_split.csv")
+            os.stat(self.path_corpus+"corpus_split_regression.csv")
         except:
             self.separate_train_test_validation(split_date, perc_val)
 
@@ -116,8 +119,8 @@ class FeatureExtractor:
         fout.close()
         print "done!", cnt, "records merged!"
 
-    def generate_label(self, f_stock="corpus_stock.csv", f_label="corpus_label.csv"):
-        print "generating labels ...",
+    def generate_label_multiclass(self, f_stock="corpus_stock.csv", f_label="corpus_label_multiclass.csv"):
+        print "generating multi-class labels ...",
 
         with open(self.path_corpus+f_stock, "r") as f:
             lines = f.readlines()
@@ -132,7 +135,7 @@ class FeatureExtractor:
             change = float(line[4]) / float(line[3]) - 1.
             change *= 100.
 
-            if abs(change) < 0.7 and abs(change) > 0.2:
+            if abs(change) < self.significance_buffer_upper and abs(change) > self.significance_buffer_lower:
                 continue
 
             label = significant_change_multiclass(change)
@@ -148,8 +151,30 @@ class FeatureExtractor:
         fout.close()
         print "done!", cnt_pos, "positives ", cnt_neg, "negatives ", cnt_neu, "neutal"
 
+    def generate_label_regression(self, f_stock="corpus_stock.csv", f_label="corpus_label_regression.csv"):
+        print "generating regression labels"
 
-    def separate_train_test_validation(self, split_date, perc_val, f_label="corpus_label.csv", f_split="corpus_split.csv"):
+        with open(self.path_corpus+f_stock, "r") as f:
+            lines = f.readlines()
+        fout = open(self.path_corpus+f_label, "w")
+
+        for i in xrange(len(lines)-1):
+            line = lines[i].strip().split(",")
+
+            change = float(line[4]) / float(line[3]) - 1.
+            change *= 100.
+
+            if abs(change) < self.significance_buffer_upper and abs(change) > self.significance_buffer_lower:
+                continue
+
+            fout.write(lines[i].strip()+","+str(change)+"\n")
+        fout.write(lines[-1].strip() + ",0\n")
+        fout.close()
+        print "done!"
+
+
+
+    def separate_train_test_validation(self, split_date, perc_val, f_label="corpus_label_regression.csv", f_split="corpus_split_regression.csv"):
         '''
         Format:
         Company, Date, Id, Open, Close, Label, Dataset
@@ -269,7 +294,7 @@ class FeatureGenerator:
             record = record.strip().split(",")
             self.index.append(int(record[2]))
             self.company.append(record[0])
-            self.labels.append(int(record[-1]))
+            self.labels.append(float(record[-1]))
 
     def load_topic_dist(self, f_lda_topic):
         self.topic_dist = []
@@ -418,13 +443,13 @@ if __name__ == "__main__":
     # extract topic distribution from raw data
     # structure data into libSVM format
     # ===========================================
-    '''
+
     path_lda = "../results/lda/"
     path_stocks = "../data/stocks/"
     path_corpus = "../data/lda/"
     path_features = "../data/features/"
-    split_date = date(2015,6,1)  # old dataset
-    #split_date = date(2015,11,1)  # new dataset
+    #split_date = date(2015,6,1)  # old dataset
+    split_date = date(2015,11,1)  # new dataset
 
     folders = os.listdir(path_lda)
     for folder in folders:
@@ -435,9 +460,9 @@ if __name__ == "__main__":
                               path_features=path_features,
                               split_date=split_date)
         FE.features_topic_dist(f_lda_topic="final.topic",
-                               f_corpus="corpus_label.csv",
+                               f_corpus="corpus_label_regression.csv",
                                fileout="topic_dist_"+k+".csv")
-    '''
+
 
     # ===========================================
     # generate topic_hist, topic_change
@@ -445,9 +470,9 @@ if __name__ == "__main__":
 
     path_lda = "../results/lda/"
     path_features = "../data/features/"
-    f_corpus = "../data/lda/corpus_label.csv"
-    params_decay = [0.9, 0.7]
-    params_window_size = [1, 2]
+    f_corpus = "../data/lda/corpus_label_regression.csv"
+    params_decay = [1, 0.9, 0.8, 0.7]
+    params_window_size = [1, 2, 3, 4, 5, 6]
 
     for decay in params_decay:
         for window_size in params_window_size:
