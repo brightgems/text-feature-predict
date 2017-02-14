@@ -11,11 +11,11 @@ def calculate_metrics(datapoints):
 
     cm = generate_confusion_matrix(datapoints=datapoints, show=True)
 
-    p_avg = 0.0
-    r_avg = 0.0
-    f1 = 0.0
-    f05 = 0.0
-    f2 = 0.0
+    p = []
+    r = []
+    f1 = []
+    f05 = []
+    f2 = []
 
     num_classes = len(cm[0])
 
@@ -36,20 +36,20 @@ def calculate_metrics(datapoints):
         if fp + tn > 0:
             specificity = tn / float(fp + tn)
 
-        p_avg += precision
-        r_avg += recall
+        if precision + recall > 0:
+            F1 = calculate_f_beta(precision, recall, 1)
+            F05 = calculate_f_beta(precision, recall, 0.5)
+            F2 = calculate_f_beta(precision, recall, 2)
 
-    p_avg /= num_classes
-    r_avg /= num_classes
-
-    if p_avg + r_avg > 0:
-        f1 = calculate_f_beta(p_avg, r_avg, 1)
-        f05 = calculate_f_beta(p_avg, r_avg, 0.5)
-        f2 = calculate_f_beta(p_avg, r_avg, 2)
+        p.append(precision)
+        r.append(recall)
+        f1.append(F1)
+        f05.append(F05)
+        f2.append(F2)
 
     accuracy = calculate_accuracy(cm)
 
-    return p_avg, r_avg, f1, accuracy
+    return p, r, f1, accuracy
 
 
 def generate_confusion_matrix(datapoints, show=False):
@@ -163,17 +163,14 @@ def run_evaluation(predictions_root, labels_root):
                     #print "true:", true_labels_file
                     #print "test:", pred_labels_file
                     p, r, f, a = calculate_metrics(parse_files(true_labels_file, pred_labels_file))
-                    precision += p
-                    recall += r
-                    f1 += f
-                    accuracy += a
-                    count += 1
-            precision = precision / count * 100
-            recall = recall / count * 100
-            f1 = f1 / count * 100
-            accuracy = accuracy / count * 100
-            print folder, 'precision=', "{0:.2f}".format(precision), 'recall=', "{0:.2f}".format(recall), \
-                  'f1=', "{0:.2f}".format(f1), 'accuracy=', "{0:.2f}".format(accuracy)
+                    accuracy = a * 100
+                    print folder, 'accuracy=', "{0:.2f}".format(accuracy)
+                    for i in range(len(p)):
+                        precision = p[i] * 100
+                        recall = r[i] * 100
+                        f1 = f[i] * 100
+                        print 'class= ', str(i-1), ': precision=', "{0:.2f}".format(precision), 'recall=', "{0:.2f}".format(recall), \
+                          'f1=', "{0:.2f}".format(f1)
 
 
 if __name__ == '__main__':
