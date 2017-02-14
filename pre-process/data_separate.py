@@ -323,9 +323,11 @@ if __name__ == '__main__':
 
     path = '../data/features/'
     corpus_split = '../data/lda/corpus_split.csv'
-    params_decay = [0.9, 0.7]
-    params_window_size = [1, 2]
+    params_decay = [1, 0.9, 0.8, 0.7]
+    params_window_size = [1, 2, 3, 4, 5, 6]
 
+    st = "topic_change"
+    generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
 
     for decay in params_decay:
         for window_size in params_window_size:
@@ -333,7 +335,6 @@ if __name__ == '__main__':
             generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
             st = "topic_hist_d{}_w{}_cont".format(decay, window_size)
             generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
-            st = "topic_change"
-            generate_dataset_split(batch_name=st, features_root=path, corpus_split=corpus_split, oversampling=True)
+
 
 

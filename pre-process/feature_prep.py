@@ -446,8 +446,8 @@ if __name__ == "__main__":
     path_lda = "../results/lda/"
     path_features = "../data/features/"
     f_corpus = "../data/lda/corpus_label.csv"
-    params_decay = [0.9, 0.7]
-    params_window_size = [1, 2]
+    params_decay = [1, 0.9, 0.8, 0.7]
+    params_window_size = [1, 2, 3, 4, 5, 6]
 
     for decay in params_decay:
         for window_size in params_window_size:
