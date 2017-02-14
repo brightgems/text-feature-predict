@@ -75,7 +75,7 @@ if __name__=="__main__":
             for c in Cparas:
                 for g in Gparas:
                     # sys.stdout.write('Kernel:{0}, C paras:{1}, Gamma:{2}'.format(kernel_name[kernel], c, g))
-                    fout.write('Kernel:{0}, C paras:{1}, Gamma:{2}'.format(kernel_name[kernel], c, g))
+                    fout.write('Kernel:{0}, C paras:{1}, Gamma:{2}; '.format(kernel_name[kernel], c, g))
                     train_paras = ' -s 0 -t {0} -c {1} -g {2} -q {3} {4}'.format(kernel, c, g, train_file, model_file)
                     execute(liblinear_train + train_paras)
                     valid_paras = ' {0} {1} {2}'.format(valid_file, model_file, output_file)
@@ -90,7 +90,7 @@ if __name__=="__main__":
         else: # tune c
             for c in Cparas:
                 # sys.stdout.write('Kernel:{0}, C paras:{1} '.format(kernel_name[kernel], c))
-                fout.write('Kernel:{0}, C paras:{1} '.format(kernel_name[kernel], c))
+                fout.write('Kernel:{0}, C paras:{1}; '.format(kernel_name[kernel], c))
                 train_paras = ' -s 0 -t {0} -c {1} -q {2} {3}'.format(kernel, c, train_file, model_file)
                 execute(liblinear_train + train_paras)
                 valid_paras = ' {0} {1} {2}'.format(valid_file, model_file, output_file)
