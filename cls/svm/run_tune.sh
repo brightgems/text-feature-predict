@@ -6,7 +6,7 @@ kernel=2 # use rbf kernel (for topic modeling)
 tune_folder=$1
 IFS=';' read -ra folders <<< $tune_folder
 
-path_in="/home/yiren/Documents/time-series-predict/data/test"
+path_in="/home/yiren/Documents/time-series-predict/data/features"
 echo $path_in
 
 for path_feature in $(find $path_in/* -maxdepth 0 -mindepth 0 -type d);
@@ -38,4 +38,10 @@ do
     done
 done
 
+
+# "topic_change;topic_hist_d0.7_w1;topic_hist_d0.7_w1_cont;topic_hist_d0.7_w2;topic_hist_d0.7_w2_cont;topic_hist_d0.7_w3;topic_hist_d0.7_w3_cont;topic_hist_d0.7_w4;topic_hist_d0.7_w4_cont;topic_hist_d0.7_w5"
+# "topic_hist_d0.7_w5_cont;topic_hist_d0.7_w6;topic_hist_d0.7_w6_cont;topic_hist_d0.8_w1;topic_hist_d0.8_w1_cont;topic_hist_d0.8_w2;topic_hist_d0.8_w2_cont;topic_hist_d0.8_w3;topic_hist_d0.8_w3_cont;topic_hist_d0.8_w4"
+# "topic_hist_d0.8_w4_cont;topic_hist_d0.8_w5;topic_hist_d0.8_w5_cont;topic_hist_d0.8_w6;topic_hist_d0.8_w6_cont;topic_hist_d0.9_w1;topic_hist_d0.9_w1_cont;topic_hist_d0.9_w2;topic_hist_d0.9_w2_cont;topic_hist_d0.9_w3"
+# "topic_hist_d0.9_w3_cont;topic_hist_d0.9_w4;topic_hist_d0.9_w4_cont;topic_hist_d0.9_w5;topic_hist_d0.9_w5_cont;topic_hist_d0.9_w6;topic_hist_d0.9_w6_cont;topic_hist_d1_w1;topic_hist_d1_w1_cont;topic_hist_d1_w2"
+# "topic_hist_d1_w2_cont;topic_hist_d1_w3;topic_hist_d1_w3_cont;topic_hist_d1_w4;topic_hist_d1_w4_cont;topic_hist_d1_w5;topic_hist_d1_w5_cont;topic_hist_d1_w6;topic_hist_d1_w6_cont"
 

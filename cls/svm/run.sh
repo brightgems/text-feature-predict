@@ -37,10 +37,11 @@ do
     model="$obj_path/model.$folder_base"
     output="$obj_path/output.$folder_base"
 
-    ./svm-scale -s "$obj_path/train.scale.para" "$train_file" > "$train_file.scaled"
-    ./svm-scale -r "$obj_path/train.scale.para" "$test_file" > "$test_file.scaled"
-    ./svm-train -s 0 -t $kernel -c $c -g $g -q "$train_file.scaled" "$model"
-    ./svm-predict "$test_file.scaled" "$model" "$output"
+    ./svm-scale -s "$obj_path/train.scale.para" "$train_file" > "$obj_path/train.scaled"
+    ./svm-scale -r "$obj_path/train.scale.para" "$test_file" > "$obj_path/test.scaled"
+    ./svm-train -s 0 -t $kernel -c $c -g $g -q "$obj_path/train.scaled" "$model"
+    ./svm-predict "$obj_path/test.scaled" "$model" "$output"
+    rm -f "$obj_path/train.scaled" "$obj_path/test.scaled" "$obj_path/train.scale.para"
 
     echo ""
 
