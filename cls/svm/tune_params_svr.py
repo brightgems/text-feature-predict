@@ -15,12 +15,9 @@ from subprocess import STDOUT
 
 kernels = [2]
 kernel_name = ['linear', 'polynomial', 'rbf', 'sigmoid']
-#Cparas = [2**i for i in range(-5, 10)]
-#Gparas = [2**i for i in range(-10, 3)]
-#Epsilon = [0, 0.01, 0.1, 0.5, 1, 2, 4, 8]
-Cparas = [2**i for i in range(-1, 1)]
-Gparas = [2**i for i in range(-1, 1)]
-Epsilon = [0.01, 0.1]
+Cparas = [2**i for i in range(-5, 10)]
+Gparas = [2**i for i in range(-10, 3)]
+Epsilon = [0, 0.01, 0.1, 0.5, 1, 2, 4, 8]
 
 
 # Execute a subprocess with standard output
