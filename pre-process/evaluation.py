@@ -1,6 +1,6 @@
 import sys
 from os import listdir
-
+from operator import itemgetter
 
 def calculate_metrics(datapoints):
     '''
@@ -135,8 +135,6 @@ def find_labels_file(path, runid):
 def run_evaluation(predictions_root, labels_root):
     topics = ['t10', 't15', 't20', 't25', 't30', 't35', 't40', 't45', 't50']
 
-    # labels_root = "/home/yiren/Documents/Financial-Topic-Model/data/features/cross_validation/test.true.labels/"
-    # predictions_root = "/home/yiren/Documents/Financial-Topic-Model/codes/classifier/lr/results/l2.c1.0/"
 
     for topic in topics:
         print '---------------------------'
@@ -146,13 +144,7 @@ def run_evaluation(predictions_root, labels_root):
             if num_topic not in folder:
                 continue
             features_name = folder.replace("."+topic, "")
-            # print folder
 
-            precision = 0.
-            recall = 0.
-            f1 = 0.
-            accuracy = 0.
-            count = 0
 
             for lsdir in listdir(predictions_root + folder):
                 if 'output' in lsdir:
@@ -163,6 +155,19 @@ def run_evaluation(predictions_root, labels_root):
                     #print "true:", true_labels_file
                     #print "test:", pred_labels_file
                     p, r, f, a = calculate_metrics(parse_files(true_labels_file, pred_labels_file))
+
+                    f1_all = (f[0] + f[1] + f[2]) / 3
+                    f1_pos_neg = (f[0] + f[2]) / 2
+
+                    if '_change' in folder:
+                        f1_topic_change.append((f1_all, f1_pos_neg, folder))
+
+                    if '_hist' in folder:
+                        if '_cont' in folder:
+                            f1_topic_hist_cont.append((f1_all, f1_pos_neg, folder))
+                        else:
+                            f1_topic_hist.append((f1_all, f1_pos_neg, folder))
+
                     accuracy = a * 100
                     print folder, 'accuracy=', "{0:.2f}".format(accuracy)
                     for i in range(len(p)):
@@ -173,6 +178,7 @@ def run_evaluation(predictions_root, labels_root):
                           'f1=', "{0:.2f}".format(f1)
 
 
+
 if __name__ == '__main__':
 
     # st = "hist_cont.sentiment.kernel2.c1024"
@@ -181,6 +187,11 @@ if __name__ == '__main__':
     # labels_root = "/home/yiren/Documents/Financial-Topic-Model/data/features/cross_validation/"
     labels_root = "/Users/ds/git/time-series-predict/data/features/time/"
 
+    # store averages for feature combinations (all, pos_neg, feature_name)
+    f1_topic_change = []
+    f1_topic_hist = []
+    f1_topic_hist_cont = []
+
     for folder in sorted(listdir(predictions_root)):
         if 'topic_' not in folder:
             continue
@@ -188,3 +199,17 @@ if __name__ == '__main__':
         st = folder
         run_evaluation(predictions_root + st + "/",
                        labels_root + st + "/")
+
+    print
+    print '----SUMMARY----'
+    print 'Best model topic change:'
+    print 'All: ', max(f1_topic_change, key=itemgetter(0))[2], ' f1= ', max(f1_topic_change, key=itemgetter(0))[0]
+    print '1,-1:', max(f1_topic_change, key=itemgetter(1))[2], ' f1= ', max(f1_topic_change, key=itemgetter(1))[1]
+    print
+    print 'Best model topic history:'
+    print 'All: ', max(f1_topic_hist, key=itemgetter(0))[2], ' f1= ', max(f1_topic_hist, key=itemgetter(0))[0]
+    print '1,-1:', max(f1_topic_hist, key=itemgetter(1))[2], ' f1= ', max(f1_topic_hist, key=itemgetter(1))[1]
+    print
+    print 'Best model topic history concatenated:'
+    print 'All: ', max(f1_topic_hist_cont, key=itemgetter(0))[2], ' f1= ', max(f1_topic_hist_cont, key=itemgetter(0))[0]
+    print '1,-1:', max(f1_topic_hist_cont, key=itemgetter(1))[2], ' f1= ', max(f1_topic_hist_cont, key=itemgetter(1))[1]
