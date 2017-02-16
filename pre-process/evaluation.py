@@ -1,6 +1,6 @@
 import sys
 from os import listdir
-
+from operator import itemgetter
 
 def calculate_metrics(datapoints):
     '''
@@ -9,36 +9,47 @@ def calculate_metrics(datapoints):
 
     '''
 
-    cm = generate_confusion_matrix(datapoints=datapoints, show=False)
+    cm = generate_confusion_matrix(datapoints=datapoints, show=True)
 
-    for i in range(len(cm[0])):
+    p = []
+    r = []
+    f1 = []
+    f05 = []
+    f2 = []
+
+    num_classes = len(cm[0])
+
+    for i in range(num_classes):
         tp, fn, fp, tn = get_cm_for_class(cm, i)
 
+        precision = 0.0
+        recall = 0.0
+
+        specificity = 0.0
+
         if tp + fn > 0:
-            recall = max(tp / (tp + fn), 0)
-        else:
-            recall = 0
+            recall = max(tp / float(tp + fn), 0)
 
         if tp + fp > 0:
-            precision = tp / (tp + fp)
-        else:
-            precision = 0
+            precision = tp / float(tp + fp)
 
         if fp + tn > 0:
-            specificity = tn / (fp + tn)
-        else:
-            specificity = 0
+            specificity = tn / float(fp + tn)
 
         if precision + recall > 0:
-            f1 = 2 * ((precision * recall) / (precision + recall))
-            f05 = calculate_f_beta(precision, recall, 0.5)
-            f2 = calculate_f_beta(precision, recall, 2)
-        else:
-            f1, f05, f2 = 0, 0, 0
+            F1 = calculate_f_beta(precision, recall, 1)
+            F05 = calculate_f_beta(precision, recall, 0.5)
+            F2 = calculate_f_beta(precision, recall, 2)
+
+        p.append(precision)
+        r.append(recall)
+        f1.append(F1)
+        f05.append(F05)
+        f2.append(F2)
 
     accuracy = calculate_accuracy(cm)
 
-    return precision, recall, f1, accuracy
+    return p, r, f1, accuracy
 
 
 def generate_confusion_matrix(datapoints, show=False):
@@ -64,7 +75,6 @@ def generate_confusion_matrix(datapoints, show=False):
 
 
 def get_cm_for_class(cm, class_index):
-    tp = 0
     fn = 0
     fp = 0
     tn = 0
@@ -97,11 +107,11 @@ def calculate_accuracy(cm):
             if i == j:
                 tp += cm[i][j]
 
-    return float(tp / total)
+    return tp / float(total)
 
 
 def calculate_f_beta(precision, recall, beta):
-    return (1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall))
+    return float((1 + pow(beta, 2)) * ((precision * recall) / ((pow(beta, 2) * precision) + recall)))
 
 
 def parse_files(file1, file2):
@@ -125,63 +135,81 @@ def find_labels_file(path, runid):
 def run_evaluation(predictions_root, labels_root):
     topics = ['t10', 't15', 't20', 't25', 't30', 't35', 't40', 't45', 't50']
 
-    # labels_root = "/home/yiren/Documents/Financial-Topic-Model/data/features/cross_validation/test.true.labels/"
-    # predictions_root = "/home/yiren/Documents/Financial-Topic-Model/codes/classifier/lr/results/l2.c1.0/"
 
     for topic in topics:
         print '---------------------------'
         num_topic = topic.replace('t', '')
         lsdirs = sorted(listdir(predictions_root))
         for folder in lsdirs:
-            if topic not in folder:
+            if num_topic not in folder:
                 continue
             features_name = folder.replace("."+topic, "")
-            # print folder
 
-            precision = 0.
-            recall = 0.
-            f1 = 0.
-            accuracy = 0.
-            count = 0
 
             for lsdir in listdir(predictions_root + folder):
                 if 'output' in lsdir:
-                    run_id = lsdir.replace('output.{}.'.format(topic), '').replace('.txt', '')
-                    s = run_id.split(".")[0].replace('s', '')
-                    k = run_id.split(".")[1].replace('k', '')
                     # svm output file
                     pred_labels_file = "{}{}/{}".format(predictions_root, folder, lsdir)
                     # test set file
-                    features_folder_name = "topic_dist_{0}{1}".format(topic.replace('t', ''),
-                                                                      features_name.replace('topic', ''))
-                    if features_name == "topic_dist":
-                        features_folder_name = "topic_dist_{0}".format(topic.replace('t', ''))
-                    true_labels_file = "{0}{1}/{2}/{3}/{2}.test.s{3}.k{4}".format(labels_root,
-                                                                                  features_name,
-                                                                                  features_folder_name,
-                                                                                  s, k)
-                    # true_labels_file = find_labels_file(true_labels_path, run_id)
+                    true_labels_file = "{0}{1}/{1}.test".format(labels_root, features_name)
                     #print "true:", true_labels_file
                     #print "test:", pred_labels_file
                     p, r, f, a = calculate_metrics(parse_files(true_labels_file, pred_labels_file))
-                    precision += p
-                    recall += r
-                    f1 += f
-                    accuracy += a
-                    count += 1
-            precision = precision / count * 100
-            recall = recall / count * 100
-            f1 = f1 / count * 100
-            accuracy = accuracy / count * 100
-            print folder, 'precision=', "{0:.2f}".format(precision), 'recall=', "{0:.2f}".format(recall), \
-                  'f1=', "{0:.2f}".format(f1), 'accuracy=', "{0:.2f}".format(accuracy)
+
+                    f1_all = (f[0] + f[1] + f[2]) / 3
+                    f1_pos_neg = (f[0] + f[2]) / 2
+
+                    if '_change' in folder:
+                        f1_topic_change.append((f1_all, f1_pos_neg, folder))
+
+                    if '_hist' in folder:
+                        if '_cont' in folder:
+                            f1_topic_hist_cont.append((f1_all, f1_pos_neg, folder))
+                        else:
+                            f1_topic_hist.append((f1_all, f1_pos_neg, folder))
+
+                    accuracy = a * 100
+                    print folder, 'accuracy=', "{0:.2f}".format(accuracy)
+                    for i in range(len(p)):
+                        precision = p[i] * 100
+                        recall = r[i] * 100
+                        f1 = f[i] * 100
+                        print 'class= ', str(i-1), ': precision=', "{0:.2f}".format(precision), 'recall=', "{0:.2f}".format(recall), \
+                          'f1=', "{0:.2f}".format(f1)
+
 
 
 if __name__ == '__main__':
-    #st = "hist.kernel2.c1024"
-    #st = "hist_cont.kernel2.c1024"
-    #st = "hist.sentiment.kernel2.c1024"
-    st = "hist_cont.sentiment.kernel2.c1024"
-    predictions_root = "/home/yiren/Documents/Financial-Topic-Model/codes/classifier/svm/results/{}/".format(st)
-    labels_root = "/home/yiren/Documents/Financial-Topic-Model/data/features/cross_validation/"
-    run_evaluation(predictions_root, labels_root)
+
+    # st = "hist_cont.sentiment.kernel2.c1024"
+    # predictions_root = "/home/yiren/Documents/Financial-Topic-Model/codes/classifier/svm/results/{}/".format(st)
+    predictions_root = "/Users/ds/git/time-series-predict/results/svm/multi-class/"
+    # labels_root = "/home/yiren/Documents/Financial-Topic-Model/data/features/cross_validation/"
+    labels_root = "/Users/ds/git/time-series-predict/data/features/time/"
+
+    # store averages for feature combinations (all, pos_neg, feature_name)
+    f1_topic_change = []
+    f1_topic_hist = []
+    f1_topic_hist_cont = []
+
+    for folder in sorted(listdir(predictions_root)):
+        if 'topic_' not in folder:
+            continue
+
+        st = folder
+        run_evaluation(predictions_root + st + "/",
+                       labels_root + st + "/")
+
+    print
+    print '----SUMMARY----'
+    print 'Best model topic change:'
+    print 'All: ', max(f1_topic_change, key=itemgetter(0))[2], ' f1= ', max(f1_topic_change, key=itemgetter(0))[0]
+    print '1,-1:', max(f1_topic_change, key=itemgetter(1))[2], ' f1= ', max(f1_topic_change, key=itemgetter(1))[1]
+    print
+    print 'Best model topic history:'
+    print 'All: ', max(f1_topic_hist, key=itemgetter(0))[2], ' f1= ', max(f1_topic_hist, key=itemgetter(0))[0]
+    print '1,-1:', max(f1_topic_hist, key=itemgetter(1))[2], ' f1= ', max(f1_topic_hist, key=itemgetter(1))[1]
+    print
+    print 'Best model topic history concatenated:'
+    print 'All: ', max(f1_topic_hist_cont, key=itemgetter(0))[2], ' f1= ', max(f1_topic_hist_cont, key=itemgetter(0))[0]
+    print '1,-1:', max(f1_topic_hist_cont, key=itemgetter(1))[2], ' f1= ', max(f1_topic_hist_cont, key=itemgetter(1))[1]
