@@ -71,6 +71,8 @@ if __name__=="__main__":
         execute((svm_scale + scale_paras))
         train_file = '{0}.scale'.format(train_file)
         valid_file = '{0}.scale'.format(valid_file)
+    else:
+        print "\ttraining without scale"
 
     best_model = {"mse": 100000., "scc": 1., "kernel": -1, "c": -1, "g": -1, 'eps': -1}
 
