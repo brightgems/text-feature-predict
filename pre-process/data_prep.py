@@ -6,9 +6,11 @@ extract date and textual article
 
 import ast # abstract syntax trees
 import os
+import numpy
 import pandas as pd
 from collections import defaultdict
 import nltk
+from nltk.tokenize import word_tokenize
 from operator import itemgetter
 import cPickle as pkl
 
@@ -221,6 +223,141 @@ class lda_prep:
         self.fout.close()
         print "done!"
 
+class DataPoints:
+    def __init__(self):
+        self.x = []
+        self.y = []
+
+    def set(self, data):
+        self.x = data[0]
+        self.y = data[1]
+
+    def set_x(self, x):
+        self.x = x
+
+    def set_y(self, y):
+        self.y = y
+
+    def clear(self):
+        self.x = []
+        self.y = []
+
+class DataProcessor:
+    def __init__(self, dataset_path_in, dataset_path_out, fvocab=None,
+                 vocab_size=None, valid_portion=None, overwrite=False):
+        self.train = DataPoints()
+        self.valid = DataPoints()
+        self.test = DataPoints()
+        self.vocab = dict() # vocab for the loaded dataset
+        self.vocab_size = vocab_size # take top vocab_size vocab for loaded dataset if not None
+
+        # preprocess
+        def _run():
+            self.load_data(dataset_path_in=dataset_path_in, shuffle=True)
+            self.gen_vocab(fvocab=fvocab)
+            self.save_data(dataset_path_out=dataset_path_out)
+
+        try:
+            os.stat(dataset_path_out)
+            print dataset_path_out + " already exist!"
+            if overwrite:
+                print "overwriting ..."
+                _run()
+        except:
+            _run()
+
+    def gen_vocab(self, fvocab=None):
+        """
+        generate vocab from loaded dataset
+        vocab are saved as dict(): word -> idx
+        """
+        print "generating vocabulary ..."
+        def _get_vocab(dataset, wordlist):
+            for line in dataset:
+                for word in line:
+                    wordlist[word] += 1
+            return wordlist
+
+        wordlist = defaultdict(int)
+        wordlist = _get_vocab(self.train.x, wordlist)
+        wordlist = _get_vocab(self.test.x, wordlist)
+
+        wordlist = sorted(wordlist.items(), key=itemgetter(1), reverse=True)
+        freq_cnt = 0.
+        total_cnt = 0.
+        for i, word in enumerate(wordlist):
+            if self.vocab_size and len(self.vocab) < self.vocab_size:
+                self.vocab[word[0]] = i
+                freq_cnt += word[1]
+            total_cnt += word[1]
+        print "raw vocab size: {}".format(len(wordlist))
+        print "final vocab size: {}".format(len(self.vocab))
+        print "freq coverage: {}".format(freq_cnt / total_cnt)
+
+        # save vocab
+        if fvocab:
+            pkl.dump(self.vocab, open(fvocab, "wb"))
+
+    def load_data(self, dataset_path_in, shuffle=True):
+        print "loading from {}".format(dataset_path_in),
+        self.train.clear()
+        self.test.clear()
+
+        with open(dataset_path_in, "r") as f:
+            lines = f.readlines()
+
+        for lidx, line in enumerate(lines):
+            line = line.strip().split(",")
+            if len(line) != 3:
+                print "warning: line {} has less than three columns".format(lidx+1)
+                continue
+            if int(line[1]) == 0: # train
+                self.train.x.append(word_tokenize(line[2])) # text
+                self.train.y.append(int(line[0])) # label
+            elif int(line[1]) == 1: # test
+                self.test.x.append(word_tokenize(line[2]))
+                self.test.y.append(int(line[0]))
+            else:
+                print "warning: fail to recognize train/test label {0} at line {1}".format(line[1], lidx)
+
+        if shuffle:
+            self.shuffle()
+        print "done!"
+
+    def shuffle(self):
+        print "using shuffling...",
+        sidx = numpy.random.permutation(len(self.train.x))
+        self.train.x = [self.train.x[idx] for idx in sidx]
+        self.train.y = [self.train.y[idx] for idx in sidx]
+        sidx = numpy.random.permutation(len(self.test.x))
+        self.test.x = [self.test.x[idx] for idx in sidx]
+        self.test.y = [self.test.y[idx] for idx in sidx]
+
+    def set_valid(self, valid_portion=0.15):
+        """
+        set valid_portion of training data into validation set
+        """
+        n_sample = len(self.train.x)
+        sidx = numpy.random.permutation(n_sample)
+        n_train = int(numpy.round(n_sample * (1 - valid_portion)))
+        self.valid.x = [self.train.x[idx] for idx in sidx[n_train:]]
+        self.valid.y = [self.train.y[idx] for idx in sidx[n_train:]]
+        self.train.x = [self.train.x[idx] for idx in sidx[:n_train]]
+        self.train.y = [self.train.y[idx] for idx in sidx[:n_train]]
+
+    def save_data(self, dataset_path_out):
+        print "saving to file ...",
+        train = [[" ".join(line) for line in self.train.x], self.train.y]
+        test = [[" ".join(line) for line in self.test.x], self.test.y]
+        valid = [[" ".join(line) for line in self.valid.x], self.valid.y]
+        with open(dataset_path_out, "wb") as f:
+            pkl.dump(train, f)
+            pkl.dump(test, f)
+            pkl.dump(valid, f)
+        print "done!"
+        print "train:", len(self.train.x), "valid:", len(self.valid.x), "test:", len(self.test.x)
+
+
 if __name__ == "__main__":
 
     path_raw = '../../data/crawled/'
@@ -229,6 +366,13 @@ if __name__ == "__main__":
 
     # extract_docs(path_in=path_raw, path_out=path_extracted)
 
+    '''
     data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
     data_prep.comb_docs(fout_name="corpus-raw.txt")
     data_prep.prep_doc_term()
+    '''
+
+    corpus_in = "../../data/corpus/corpus_label_doc.csv"
+    corpus_out = "../../data/corpus/corpus_bow.npz"
+    data_prep = DataProcessor(dataset_path_in=corpus_in, dataset_path_out=corpus_out,
+                              vocab_size=100000, overwrite=False)
