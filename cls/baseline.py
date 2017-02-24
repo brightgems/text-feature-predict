@@ -102,7 +102,7 @@ class Baselines:
 
         for feature in Features:
             sys.stdout.flush()
-            print "tuning:", feature
+            print "\ntuning:", feature
             eval("self.feature_" + feature)(use_tfidf=False)
             results.append(self.tune_LR())
             print "tuning:", feature + "-TFIDF"
@@ -111,18 +111,18 @@ class Baselines:
 
         cnt = 0
         for feature in Features:
-            print "\n==============================="
+            print "\n============================================"
             print "feature: {}".format(feature)
-            print "==============================="
-            print "test accuracy:", results[cnt][0]
-            self.cls_model = results[cnt][1]
+            print "============================================"
+            print "[Accuracy] train:", results[cnt][1], "\ttest:", results[cnt][0]
+            self.cls_model = results[cnt][2]
             self.get_top_features(N=50, feature=feature)
             cnt += 1
-            print "\n==============================="
+            print "\n============================================"
             print "feature: {}".format(feature+"-TFIDF")
-            print "==============================="
-            print "test accuracy:", results[cnt][0]
-            self.cls_model = results[cnt][1]
+            print "============================================"
+            print "[Accuracy] train:", results[cnt][1], "\ttest:", results[cnt][0]
+            self.cls_model = results[cnt][2]
             self.get_top_features(N=50, feature=feature)
             cnt += 1
 
@@ -165,20 +165,35 @@ class Baselines:
                                             verbose=self.verbose)
         self.cls_model.fit(self.x_train, self.data_reader.train.y)
         self.predicted = self.cls_model.predict(self.x_test)
-        accuracy = accuracy_score(self.data_reader.test.y, self.predicted)
-        print "\ttest accuracy:", accuracy
+        accu_train = self.cls_model.score(self.x_train, self.data_reader.train.y)
+        accu = accuracy_score(self.data_reader.test.y, self.predicted)
+        print "\t[Accuracy] train:", accu_train, "\ttest:", accu
 
     def tune_LR(self):
         cv_model = GridSearchCV(LogisticRegression(penalty='l2', max_iter=500),
                                 param_grid=param_grid_LR,
-                                verbose=5)
+                                verbose=5, return_train_score=True)
         cv_model.fit(self.x_train, self.data_reader.train.y)
-        print "======================================"
-        print "best model params:", cv_model.best_params_
+        print "\n======================================"
+        print "Tuning complete"
+        print "Best score (on left out data):", cv_model.best_score_
+        print "Tuning summary:"
+        summary = ["split0_train_score", "split0_test_score",
+                   "split1_train_score", "split1_test_score",
+                   "split2_train_score", "split2_test_score"]
+        for items in summary:
+            print "\t{}: {}".format(items, cv_model.cv_results_[items])
+        print "======================================\n"
+
+        print "\n======================================"
+        print "Best model:", cv_model.best_params_
+        print "train size:", self.x_train.shape
+        print "test size:", self.x_test.shape
+        accu_train = cv_model.score(self.x_train, self.data_reader.train.y)
         accu = cv_model.score(self.x_test, self.data_reader.test.y)
-        print "best test accuracy:", accu
-        print "======================================"
-        return (accu, cv_model.best_estimator_)
+        print "[Accuracy] train:", accu_train, "\ttest:", accu
+        print "======================================\n"
+        return (accu, accu_train, cv_model.best_estimator_)
 
 
     def get_top_features(self, N=30, feature="BOW"):

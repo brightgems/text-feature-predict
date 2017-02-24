@@ -3,7 +3,7 @@
 kernel=2 # use rbf kernel (for topic modeling)
 # kernel=0 # use linear kernel (for bow/tfidf baseline)
 
-path_in="/home/yiren/Documents/time-series-predict/data/features_reg"
+path_in="/home/yiren/Documents/time-series-predict/data/topic_dist"
 echo $path_in
 
 tune_model=$1

@@ -2,7 +2,8 @@
 
 tune_log=$1
 echo $tune_log
- [ -d "results_reg/" ] || mkdir -p "results_reg/"
+[ -d "../../../results/results_reg" ] || mkdir -p "../../../results/results_reg"
+result_path="../../../results/results_reg"
 
 read -r line < $tune_log
 echo $line
@@ -42,7 +43,7 @@ do
 
     echo "training for" $folder_base, kernel:$kernel, c:$c, g:$g, eps:$eps
 
-    obj_path="results_reg/"$folder_feature/$folder_base
+    obj_path="$result_path/"$folder_feature/$folder_base
      [ -d $obj_path ] || mkdir -p $obj_path
 
     train_file=$path/$folder_base".train"

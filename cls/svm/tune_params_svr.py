@@ -57,10 +57,10 @@ if __name__=="__main__":
         svm_kernels = kernels
 
     try:
-        os.stat("tune_svr_logs")
+        os.stat("tune_logs_reg")
     except:
-        os.mkdir("tune_svr_logs")
-    final_result_output = 'tune_svr_logs/{0}.tune.log'.format(train_file.split("/")[-1])
+        os.mkdir("tune_logs_reg")
+    final_result_output = 'tune_logs_reg/{0}.tune.log'.format(train_file.split("/")[-1])
     fout = open(final_result_output, 'w')
 
     if scale:

@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 
 tune_log=$1
- [ -d "results/" ] || mkdir -p "results/"
+ [ -d "../../../results/results_svm" ] || mkdir -p "../../../results/results_svm"
+ result_path="../../../results/results_svm"
 
+cnt=0
 while IFS= read -r line
 do
+    if [ $cnt = 0 ]
+    then
+        cnt=$cnt+1
+        continue
+    fi
+
     IFS= read -r path # path
     if [ ! $path ]
     then
@@ -27,9 +35,9 @@ do
     IFS=':' read -r -a g <<< ${params[4]}
     g=${g[1]} # gamma
 
-    echo "training for" $folder_base, kernel:$kernel, c:$c, g:$g
+    echo "Training for" $folder_base, kernel:$kernel, c:$c, g:$g
 
-    obj_path="results/"$folder_feature/$folder_base
+    obj_path="$result_path/"$folder_feature/$folder_base
      [ -d $obj_path ] || mkdir -p $obj_path
 
     train_file=$path/$folder_base".train"
@@ -40,8 +48,12 @@ do
     ./svm-scale -s "$obj_path/train.scale.para" "$train_file" > "$obj_path/train.scaled"
     ./svm-scale -r "$obj_path/train.scale.para" "$test_file" > "$obj_path/test.scaled"
     ./svm-train -s 0 -t $kernel -c $c -g $g -q "$obj_path/train.scaled" "$model"
+    echo "Training:"
+    ./svm-predict "$obj_path/train.scaled" "$model" "output"
+    echo "Testing:"
     ./svm-predict "$obj_path/test.scaled" "$model" "$output"
-    rm -f "$obj_path/train.scaled" "$obj_path/test.scaled" "$obj_path/train.scale.para"
+
+    rm -f "$obj_path/train.scaled" "$obj_path/test.scaled" "$obj_path/train.scale.para" "output"
 
     echo ""
 
