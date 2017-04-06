@@ -10,7 +10,7 @@ sig_perc = 2
 sig_perc_multic = 1
 
 
-def significant_change(x):
+def significant_change(x, sig_perc=2):
     if abs(x) >= sig_perc:
         return 1
     else:
