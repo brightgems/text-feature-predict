@@ -117,7 +117,7 @@ def prep_baseline(f_corpus_raw, f_label, f_out):
     label = open(f_label)
 
 class lda_prep:
-    def __init__(self, path_in, path_out, vocab_size=50000, stop_words=False):
+    def __init__(self, path_in, path_out, vocab_size=50000, stop_words=False, load_collection=False):
         self.path_in = path_in
         self.path_out = path_out
         self.stop_words = stop_words
@@ -132,11 +132,18 @@ class lda_prep:
             os.stat(self.path_out)
         except:
             os.mkdir(self.path_out)
-        self.fin_names = os.listdir(self.path_in)
-        self.fout = open(self.path_out + "corpus_lda.txt", "w") # doc-term format input for lda
 
-        for fin_name in self.fin_names:
-            self.load_docs(fin_name=fin_name)
+        self.fout = open(self.path_out + "corpus_lda.txt", "w")  # doc-term format input for lda
+
+        if not load_collection:
+            self.fin_names = os.listdir(self.path_in)
+
+
+            for fin_name in self.fin_names:
+                self.load_docs(fin_name=fin_name)
+        else:
+            self.load_collection(path_in)
+
         print "collection size:", len(self.collections)
 
         self.prep_vocab()
@@ -166,6 +173,28 @@ class lda_prep:
             self.total_words_cnt += len(tokens)
             self.collections.append([company_name, line[0], tokens])
         print "done! corpus size:", len(lines), "total word count:", self.total_words_cnt
+
+    def load_collection(self, fin_name):
+        """
+        load documents from a document collection [company_name, date, document]
+        the document content in the collection needs to be pre-processed and tokenized
+        with a space delimiter
+        :param fin_name: the path to the document collection
+        """
+        print "loading documents from corpus: {}".format(fin_name)
+        for line in open(fin_name):
+            line = line.strip().split("\t")  # company_name, date, doc_content
+            company_name = line[0]
+            date = line[1]
+            content = line[2]
+            if len(content) == 0:
+                continue
+            tokens = content.split(' ')
+            for token in tokens:
+                self.wordList[token] += 1
+            self.total_words_cnt += len(tokens)
+            self.collections.append([company_name, date, tokens])
+        print "done! corpus size:", len(self.collections), "total word count:", self.total_words_cnt
 
     def prep_vocab(self):
         """
@@ -359,20 +388,26 @@ class DataProcessor:
 
 
 if __name__ == "__main__":
-
+    '''
     path_raw = '../../data/crawled/'
     path_extracted = '../../data/extracted/'
     path_lda = '../../data/lda/'
 
     # extract_docs(path_in=path_raw, path_out=path_extracted)
 
-    '''
     data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
     data_prep.comb_docs(fout_name="corpus-raw.txt")
     data_prep.prep_doc_term()
-    '''
 
     corpus_in = "../../data/corpus/corpus_label_doc.csv"
     corpus_out = "../../data/corpus/corpus_bow.npz"
     data_prep = DataProcessor(dataset_path_in=corpus_in, dataset_path_out=corpus_out,
                               vocab_size=100000, overwrite=False)
+    '''
+
+    path_lda = '../data/lda/'
+    path_in = path_lda + 'corpus_raw.tsv'
+
+    data_prep = lda_prep(path_in=path_in, path_out=path_lda, vocab_size=50000,
+                         load_collection=True)
+    data_prep.prep_doc_term()
