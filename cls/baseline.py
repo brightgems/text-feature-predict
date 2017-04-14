@@ -40,6 +40,12 @@ class DataPoints:
         self.y = []
 
 class DataReader:
+    """
+    reader for logistic regression input
+    data format: train, test, valid set
+                 each set contains one list of documents (each doc as a list of words),
+                 and one corresponding labels (integer 1/-1)
+    """
     def __init__(self, dataset):
         self.train = DataPoints()
         self.valid = DataPoints()
@@ -91,7 +97,7 @@ class Baselines:
                 print "feature: {};".format(feature)
                 print "==============================="
             self.cls_LR()
-            self.get_top_features(N=50, feature=feature)
+            # self.get_top_features(N=50, feature=feature)
 
         for feature in Features:
             _train(feature, use_tfidf=False)
@@ -116,15 +122,20 @@ class Baselines:
             print "============================================"
             print "[Accuracy] train:", results[cnt][1], "\ttest:", results[cnt][0]
             self.cls_model = results[cnt][2]
-            self.get_top_features(N=50, feature=feature)
+            # self.get_top_features(N=50, feature=feature)
             cnt += 1
             print "\n============================================"
             print "feature: {}".format(feature+"-TFIDF")
             print "============================================"
             print "[Accuracy] train:", results[cnt][1], "\ttest:", results[cnt][0]
             self.cls_model = results[cnt][2]
-            self.get_top_features(N=50, feature=feature)
+            # self.get_top_features(N=50, feature=feature)
             cnt += 1
+
+        print "\nstatistical info:"
+        print "\tvocab size:", len(self.vocab)
+        if self.vocab_ngrams:
+            print "\tn-grams (n=2)", len(self.vocab_ngrams)
 
     def feature_BOW(self, use_tfidf=False):
         bow_transformer = CountVectorizer(vocabulary=self.vocab,
@@ -187,6 +198,9 @@ class Baselines:
 
         print "\n======================================"
         print "Best model:", cv_model.best_params_
+        print "vocab size:", len(self.vocab)
+        if self.vocab_ngrams:
+            print "n-grams (n=2)", len(self.vocab_ngrams)
         print "train size:", self.x_train.shape
         print "test size:", self.x_test.shape
         accu_train = cv_model.score(self.x_train, self.data_reader.train.y)
@@ -243,8 +257,9 @@ class Baselines:
             _output("{}/{}.{}".format(path_feature, feature, "valid"), set="valid")
 
 if __name__ == "__main__":
-    dataset = "../../data/corpus/corpus_bow.npz"
+    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    f_dataset_docs = dir_data + "dataset/corpus_bp_cls.npz"
 
-    data_reader = DataReader(dataset=dataset)
-    myModel = Baselines(data_reader=data_reader, vocab_size=50000, ngram_num=1000000, ngram_order=2, verbose=0)
+    data_reader = DataReader(dataset=f_dataset_docs)
+    myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2, verbose=0)
     myModel.run_tune()

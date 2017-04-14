@@ -105,17 +105,6 @@ def extract_doc_compary(doc_info, doc_contents, f_output):
 
     document_output.close()
 
-def prep_baseline(f_corpus_raw, f_label, f_out):
-    """
-    prepare corpus for baseline feature extraction
-    :param f_corpus_raw: {company name, date, documents}
-    :param f_label:
-    :param f_out:
-    :return:
-    """
-    corpus_raw = open(f_corpus_raw, "r")
-    label = open(f_label)
-
 class lda_prep:
     def __init__(self, path_in, path_out, vocab_size=50000, stop_words=False, load_collection=False):
         self.path_in = path_in
@@ -272,7 +261,7 @@ class DataPoints:
         self.y = []
 
 class DataProcessor:
-    def __init__(self, dataset_path_in, dataset_path_out, fvocab=None,
+    def __init__(self, f_corpus, f_meta_data, f_dataset_out, f_vocab=None,
                  vocab_size=None, valid_portion=None, overwrite=False):
         self.train = DataPoints()
         self.valid = DataPoints()
@@ -282,20 +271,20 @@ class DataProcessor:
 
         # preprocess
         def _run():
-            self.load_data(dataset_path_in=dataset_path_in, shuffle=True)
-            self.gen_vocab(fvocab=fvocab)
-            self.save_data(dataset_path_out=dataset_path_out)
+            self.load_data(f_corpus, f_meta_data, shuffle=True)
+            self.gen_vocab(f_vocab=f_vocab)
+            self.save_data(f_dataset_out=f_dataset_out)
 
         try:
-            os.stat(dataset_path_out)
-            print dataset_path_out + " already exist!"
+            os.stat(f_dataset_out)
+            print f_dataset_out + " already exist!"
             if overwrite:
                 print "overwriting ..."
                 _run()
         except:
             _run()
 
-    def gen_vocab(self, fvocab=None):
+    def gen_vocab(self, f_vocab=None):
         """
         generate vocab from loaded dataset
         vocab are saved as dict(): word -> idx
@@ -314,8 +303,10 @@ class DataProcessor:
         wordlist = sorted(wordlist.items(), key=itemgetter(1), reverse=True)
         freq_cnt = 0.
         total_cnt = 0.
+        if not self.vocab_size:
+            self.vocab_size = len(wordlist)
         for i, word in enumerate(wordlist):
-            if self.vocab_size and len(self.vocab) < self.vocab_size:
+            if len(self.vocab) < self.vocab_size:
                 self.vocab[word[0]] = i
                 freq_cnt += word[1]
             total_cnt += word[1]
@@ -324,30 +315,42 @@ class DataProcessor:
         print "freq coverage: {}".format(freq_cnt / total_cnt)
 
         # save vocab
-        if fvocab:
-            pkl.dump(self.vocab, open(fvocab, "wb"))
+        if f_vocab:
+            pkl.dump(self.vocab, open(f_vocab, "wb"))
 
-    def load_data(self, dataset_path_in, shuffle=True):
-        print "loading from {}".format(dataset_path_in),
+    def load_data(self, f_corpus, f_meta_data, shuffle=True):
+        """
+        load data from corpus and corpus mapping file
+        :param f_corpus: corpus {company, date, docs}, tap separated
+        :param f_meta_data: meta data, comma separated
+                            {company, date, line index in corpus (starting 0), label, train(0)/test(1)}
+        """
+        print "loading from {}".format(f_corpus),
         self.train.clear()
         self.test.clear()
 
-        with open(dataset_path_in, "r") as f:
-            lines = f.readlines()
+        with open(f_meta_data, "r") as f:
+            meta_data = f.readlines()
+        with open(f_corpus, "r") as f:
+            corpus = f.readlines()
 
-        for lidx, line in enumerate(lines):
-            line = line.strip().split(",")
-            if len(line) != 3:
+        for lidx, meta_line in enumerate(meta_data):
+            meta_line = meta_line.strip().split(",")
+            if len(meta_line) != 5:
                 print "warning: line {} has less than three columns".format(lidx+1)
                 continue
-            if int(line[1]) == 0: # train
-                self.train.x.append(word_tokenize(line[2])) # text
-                self.train.y.append(int(line[0])) # label
-            elif int(line[1]) == 1: # test
-                self.test.x.append(word_tokenize(line[2]))
-                self.test.y.append(int(line[0]))
+            doc = word_tokenize(corpus[int(meta_line[2])].strip().split("\t")[-1]) # get doc from corpus
+            label = int(meta_line[3])
+            if label == 0:
+                label = -1
+            if int(meta_line[-1]) == 0:
+                self.train.x.append(doc) # text
+                self.train.y.append(label) # label
+            elif int(meta_line[-1]) == 1:
+                self.test.x.append(doc)
+                self.test.y.append(label)
             else:
-                print "warning: fail to recognize train/test label {0} at line {1}".format(line[1], lidx)
+                print "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx)
 
         if shuffle:
             self.shuffle()
@@ -374,12 +377,12 @@ class DataProcessor:
         self.train.x = [self.train.x[idx] for idx in sidx[:n_train]]
         self.train.y = [self.train.y[idx] for idx in sidx[:n_train]]
 
-    def save_data(self, dataset_path_out):
+    def save_data(self, f_dataset_out):
         print "saving to file ...",
         train = [[" ".join(line) for line in self.train.x], self.train.y]
         test = [[" ".join(line) for line in self.test.x], self.test.y]
         valid = [[" ".join(line) for line in self.valid.x], self.valid.y]
-        with open(dataset_path_out, "wb") as f:
+        with open(f_dataset_out, "wb") as f:
             pkl.dump(train, f)
             pkl.dump(test, f)
             pkl.dump(valid, f)
@@ -388,26 +391,14 @@ class DataProcessor:
 
 
 if __name__ == "__main__":
-    '''
-    path_raw = '../../data/crawled/'
-    path_extracted = '../../data/extracted/'
-    path_lda = '../../data/lda/'
+    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    f_corpus = dir_data + "standard-query-corpus_pp.tsv"
+    f_meta_data = dir_data + "corpus_lablels_split.csv"
+    f_dataset_out = dir_data + "dataset/corpus_bp_cls.npz"
+    f_vocab = dir_data + "dataset/vocab.npz"
 
-    # extract_docs(path_in=path_raw, path_out=path_extracted)
-
-    data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
-    data_prep.comb_docs(fout_name="corpus-raw.txt")
-    data_prep.prep_doc_term()
-
-    corpus_in = "../../data/corpus/corpus_label_doc.csv"
-    corpus_out = "../../data/corpus/corpus_bow.npz"
-    data_prep = DataProcessor(dataset_path_in=corpus_in, dataset_path_out=corpus_out,
-                              vocab_size=100000, overwrite=False)
-    '''
-
-    path_lda = '../data/lda/'
-    path_in = path_lda + 'corpus_raw.tsv'
-
-    data_prep = lda_prep(path_in=path_in, path_out=path_lda, vocab_size=50000,
-                         load_collection=True)
-    data_prep.prep_doc_term()
+    preprocessor = DataProcessor(f_corpus=f_corpus,
+                                 f_meta_data=f_meta_data,
+                                 f_dataset_out=f_dataset_out,
+                                 f_vocab=f_vocab,
+                                 overwrite=True)

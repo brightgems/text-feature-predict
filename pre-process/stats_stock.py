@@ -28,18 +28,18 @@ def load_corpus(f_corpus):
     """
     load corpus
     :param f_corpus: [company_name, date, document]
-    :return: corpus_coverage: dict of {company_name -> [dates, line_number]}
+    :return: corpus_coverage: dict of {company_name -> [dates]}
     """
     with open(f_corpus, "r") as f:
         lines = f.readlines()
 
     corpus_coverage = dict()
-    for i, line in enumerate(lines):
+    for line in lines:
         line = line.strip().split("\t")
         if line[0] in corpus_coverage:
-            corpus_coverage[line[0]].append((line[1], i))
+            corpus_coverage[line[0]].append(line[1])
         else:
-            corpus_coverage[line[0]] = [(line[1], i)]
+            corpus_coverage[line[0]] = [line[1]]
 
     company_num = len(corpus_coverage)
     records_num = sum([len(corpus_coverage[kk]) for kk, vv in corpus_coverage.iteritems()])
@@ -48,27 +48,14 @@ def load_corpus(f_corpus):
     print "number of records:", records_num
     return corpus_coverage
 
-
 def significant_change(x, sig_pctg=1):
     if abs(x) >= sig_pctg:
         return 1
     else:
         return 0
 
-
-def get_labels(x, sig_pctg=1):
-    if abs(x) >= sig_pctg:
-        if x > 0:
-            return 1
-        else:
-            return 0
-    else:
-        print 'ERROR: Cant generate label for abs({}) < {}'.format(x, sig_pctg)
-
-def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1):
+def sig_statis(stock_dir, corpus_coverage, map_sym_comp, sig_pctg=1):
     corpus_sig = dict()
-
-    l_out = open(labels_out, 'w')
 
     for stock_file in listdir(stock_dir):
         # parse to get company name
@@ -82,10 +69,7 @@ def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1)
 
         # get dates with valid documents
         if company in corpus_coverage:
-            doc_dates = dict()
-            doc_tuples = corpus_coverage[company]
-            for doc_tuple in doc_tuples:
-                doc_dates[doc_tuple[0]] = doc_tuple[1]
+            doc_dates = corpus_coverage[company]
         else:
             #print "unfound company in corpus:", company
             continue
@@ -94,21 +78,16 @@ def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1)
         stock_file = stock_dir + stock_file
         df = pd.read_csv(stock_file)
         df['Close_1'] = df['Close'].shift(+1)
-        # df['Change_per_1'] = df['Close_1'] / df['Close_1'].shift(-1)
-        # df['Change_per_1'] = df.apply(lambda row: (1 - row['Change_per_1']) * -100, axis=1)
-        df['Change_per_1'] = df['Close'] / df['Open']
-        df['Change_per_1'] = df.apply(lambda row: (row['Change_per_1'] -1) * -100, axis=1)
-        # print df[:10]
+        df['Change_per_1'] = df['Close_1'] / df['Close_1'].shift(-1)
+        df['Change_per_1'] = df.apply(lambda row: (1 - row['Change_per_1']) * -100, axis=1)
         df['sig?'] = df.apply(lambda row: significant_change(row['Change_per_1'], sig_pctg), axis=1)
         # df['sig_mc?'] = df.apply(lambda row: significant_change_multiclass(row['Change_per_1']), axis=1)
 
-        df = df.ix[:, ['Date', 'Change_per_1', 'sig?']]
+        df = df.ix[:, ['Date', 'sig?']]
         cnt_sig = 0
         for idx, row in df.iterrows():
-            if row["Date"] in doc_dates.keys() and row["sig?"] == 1:
+            if row["Date"] in doc_dates and row["sig?"] == 1:
                 cnt_sig += 1
-                label = get_labels(row["Change_per_1"], sig_pctg=1)
-                l_out.write("{},{},{},{}\n".format(company, row["Date"], doc_dates[row["Date"]], label))
         corpus_sig[company] = cnt_sig
         print company, cnt_sig
 
@@ -118,18 +97,15 @@ def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1)
     print "total significant records:", total_sig
     print "==================================="
 
-    l_out.close()
-
 if __name__ == "__main__":
-    data_path = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
+    data_path = "/Users/Irene/Documents/financial_topic_model/data/bpcorpus/"
     stock_dir = data_path + "stock-price-data/"
     f_corpus = data_path + "standard-query-corpus.tsv"
     f_stock_mapping = data_path + "nasdaq-100.csv"
-    f_labels_out = data_path + "corpus_labels.csv"
 
     sig_pctg = 1.
 
     map_sym_comp = load_mapping(f_stock_mapping=f_stock_mapping)
     corpus_coverage = load_corpus(f_corpus=f_corpus)
 
-    sig_statis(stock_dir=stock_dir, corpus_coverage=corpus_coverage, map_sym_comp=map_sym_comp, labels_out=f_labels_out, sig_pctg=sig_pctg)
+    sig_statis(stock_dir=stock_dir, corpus_coverage=corpus_coverage, map_sym_comp=map_sym_comp, sig_pctg=sig_pctg)
