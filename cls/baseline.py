@@ -3,12 +3,14 @@ prepare BOW/TFIDF features, generate SVM-style file for SVM
 LR classifier
 """
 
-import numpy
+import numpy as np
 import sys
+import textwrap
 import cPickle as pkl
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score
@@ -61,13 +63,32 @@ class DataReader:
         print "done! train:", len(self.train.x),\
               "valid:", len(self.valid.x), "test:", len(self.test.x)
 
+class CustomSelectKBest(SelectKBest):
+  """
+    Extending SelectKBest with the ability to update a vocabulary that is given
+    from a CountVectorizer object.
+    Source: http://stackoverflow.com/questions/24939340/
+    scikit-learn-update-countvectorizer-after-selecting-k-best-features
+  """
+  def __init__(self, score_func=f_classif, k=10):
+    super(CustomSelectKBest, self).__init__(score_func, k)
+
+  def transform_vocabulary(self, vocabulary):
+    mask  = self.get_support(True)
+    i_map = { j:i for i, j in enumerate(mask) }
+    return { k:i_map[i] for k, i in vocabulary.iteritems() if i in i_map }
+
+  def transform_vectorizer(self, cv):
+    cv.vocabulary_ = self.transform_vocabulary(cv.vocabulary_)
+
 Features = ["BOW", "ngrams"]
 param_grid_LR = {'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000],
                  'solver': ['liblinear', 'newton-cg', 'lbfgs']}
 
 class Baselines:
     def __init__(self, data_reader, vocab=None, vocab_ngrams=None,
-                 vocab_size=100000, ngram_order=3, ngram_num=100000, verbose=0):
+                 vocab_size=100000, ngram_order=3, ngram_num=100000, verbose=0,
+                 use_chi_square=None, top_k="all"):
         self.data_reader = data_reader
         self.vocab = vocab
         self.vocab_ngrams = vocab_ngrams
@@ -84,6 +105,8 @@ class Baselines:
         self.x_test = None
         self.predicted = None
         self.cls_model = None
+        self.use_chi_square = use_chi_square
+        self.top_k = top_k
 
     def run(self):
         def _train(feature, use_tfidf):
@@ -116,6 +139,7 @@ class Baselines:
             results.append(self.tune_LR())
 
         cnt = 0
+
         for feature in Features:
             print "\n============================================"
             print "feature: {}".format(feature)
@@ -137,11 +161,21 @@ class Baselines:
         if self.vocab_ngrams:
             print "\tn-grams (n=2)", len(self.vocab_ngrams)
 
+        print "\nvocabulary:", textwrap.fill(str(self.vocab), width=100)
+        print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100)
+
     def feature_BOW(self, use_tfidf=False):
         bow_transformer = CountVectorizer(vocabulary=self.vocab,
                                           max_features=self.vocab_size)
-        self.x_train = bow_transformer.fit_transform(self.data_reader.train.x)
-        self.vocab = bow_transformer.vocabulary_
+        if self.use_chi_square is False:
+            self.x_train = bow_transformer.fit_transform(self.data_reader.train.x)
+            self.vocab = bow_transformer.vocabulary_
+        else:
+            term_doc = bow_transformer.fit_transform(self.data_reader.train.x)
+            chi_square = CustomSelectKBest(score_func=chi2, k=self.top_k)
+            self.x_train = chi_square.fit_transform(term_doc, self.data_reader.train.y)
+            self.vocab = chi_square.transform_vocabulary(bow_transformer.vocabulary_)
+
         bow_transformer_test = CountVectorizer(vocabulary=self.vocab)
         self.x_test = bow_transformer_test.fit_transform(self.data_reader.test.x)
         if len(self.data_reader.valid.x) > 0:
@@ -157,8 +191,16 @@ class Baselines:
         ngrams_transfomer = CountVectorizer(vocabulary=self.vocab_ngrams,
                                             max_features=self.ngrams_num,
                                             ngram_range=(1, self.ngrams_order))
-        self.x_train = ngrams_transfomer.fit_transform(self.data_reader.train.x)
-        self.vocab_ngrams = ngrams_transfomer.vocabulary_
+
+        if self.use_chi_square is False:
+            self.x_train = ngrams_transfomer.fit_transform(self.data_reader.train.x)
+            self.vocab_ngrams = ngrams_transfomer.vocabulary_
+        else:
+            term_doc = ngrams_transfomer.fit_transform(self.data_reader.train.x)
+            chi_square = CustomSelectKBest(score_func=chi2, k=self.top_k)
+            self.x_train = chi_square.fit_transform(term_doc, self.data_reader.train.y)
+            self.vocab_ngrams = chi_square.transform_vocabulary(ngrams_transfomer.vocabulary_)
+
         ngrams_transfomer_test = CountVectorizer(vocabulary=self.vocab_ngrams)
         self.x_test = ngrams_transfomer_test.fit_transform(self.data_reader.test.x)
         if len(self.data_reader.valid.x) > 0:
@@ -256,10 +298,55 @@ class Baselines:
         if len(self.x_valid) > 0:
             _output("{}/{}.{}".format(path_feature, feature, "valid"), set="valid")
 
+
+def get_unigram_vocab_from_file(f_unigram_features, max_vocab):
+    """
+    pass a list of unigrams to this function.
+    the first max_vocab words will be included.
+    """
+    unigrams = set(
+        line.strip().split(',')[0] for line in open(f_unigram_features).readlines()[:max_vocab])
+    return unigrams
+
+
+def get_bigram_vocab_from_file(f_bigram_features, max_vocab):
+    bigrams = set()
+    counter = 0
+    for line in open(f_bigram_features):
+        if counter == max_vocab:
+            break
+        tokens = line.split(',')[0].strip()
+        if len(tokens.split(' ')) > 1:
+            bigrams.add(tokens)
+            counter += 1
+
+    return bigrams
+
 if __name__ == "__main__":
-    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    '''
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
     f_dataset_docs = dir_data + "dataset/corpus_bp_cls.npz"
 
     data_reader = DataReader(dataset=f_dataset_docs)
     myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2, verbose=0)
     myModel.run_tune()
+    '''
+
+    # Incremental number of features ###########################
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
+    f_dataset_docs = dir_data + "dataset/corpus_bp_cls.npz"
+    # f_unigram_vocab = dir_data + 'chi-unigram-scores.csv'
+    # f_bigram_vocab = dir_data + 'chi-bigram-scores.csv'
+
+    vocab_top_k = [10, 100, 1000, 5000, 10000]
+
+    for top_k in vocab_top_k:
+        print 'performing classification for vocabulary size: {}'.format(top_k)
+        data_reader = DataReader(dataset=f_dataset_docs)
+        # vocab = get_unigram_vocab_from_file(f_unigram_vocab, top)
+        # vocab_bigram = get_bigram_vocab_from_file(f_bigram_vocab, top)
+        myModel = Baselines(data_reader=data_reader, ngram_num=1000000,
+                            ngram_order=2, verbose=0, use_chi_square=True,
+                            top_k=top_k)
+        myModel.run_tune()
