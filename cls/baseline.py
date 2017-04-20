@@ -162,7 +162,7 @@ class Baselines:
             print "\tn-grams (n=2)", len(self.vocab_ngrams)
 
         print "\nvocabulary:", textwrap.fill(str(self.vocab), width=100)
-        print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100)
+        print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100), "\n"
 
     def feature_BOW(self, use_tfidf=False):
         bow_transformer = CountVectorizer(vocabulary=self.vocab,
@@ -299,29 +299,6 @@ class Baselines:
             _output("{}/{}.{}".format(path_feature, feature, "valid"), set="valid")
 
 
-def get_unigram_vocab_from_file(f_unigram_features, max_vocab):
-    """
-    pass a list of unigrams to this function.
-    the first max_vocab words will be included.
-    """
-    unigrams = set(
-        line.strip().split(',')[0] for line in open(f_unigram_features).readlines()[:max_vocab])
-    return unigrams
-
-
-def get_bigram_vocab_from_file(f_bigram_features, max_vocab):
-    bigrams = set()
-    counter = 0
-    for line in open(f_bigram_features):
-        if counter == max_vocab:
-            break
-        tokens = line.split(',')[0].strip()
-        if len(tokens.split(' ')) > 1:
-            bigrams.add(tokens)
-            counter += 1
-
-    return bigrams
-
 if __name__ == "__main__":
     '''
     # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
@@ -336,16 +313,12 @@ if __name__ == "__main__":
     # Incremental number of features ###########################
     dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
     f_dataset_docs = dir_data + "dataset/corpus_bp_cls.npz"
-    # f_unigram_vocab = dir_data + 'chi-unigram-scores.csv'
-    # f_bigram_vocab = dir_data + 'chi-bigram-scores.csv'
 
     vocab_top_k = [10, 100, 1000, 5000, 10000]
 
     for top_k in vocab_top_k:
         print 'performing classification for vocabulary size: {}'.format(top_k)
         data_reader = DataReader(dataset=f_dataset_docs)
-        # vocab = get_unigram_vocab_from_file(f_unigram_vocab, top)
-        # vocab_bigram = get_bigram_vocab_from_file(f_bigram_vocab, top)
         myModel = Baselines(data_reader=data_reader, ngram_num=1000000,
                             ngram_order=2, verbose=0, use_chi_square=True,
                             top_k=top_k)
