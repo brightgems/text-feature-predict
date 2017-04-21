@@ -65,7 +65,7 @@ def get_labels(x, sig_pctg=1):
     else:
         print 'ERROR: Cant generate label for abs({}) < {}'.format(x, sig_pctg)
 
-def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1):
+def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1, num_previous_changes=0):
     corpus_sig = dict()
 
     l_out = open(labels_out, 'w')
@@ -93,22 +93,29 @@ def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1)
         # get significance label
         stock_file = stock_dir + stock_file
         df = pd.read_csv(stock_file)
-        df['Close_1'] = df['Close'].shift(+1)
-        # df['Change_per_1'] = df['Close_1'] / df['Close_1'].shift(-1)
-        # df['Change_per_1'] = df.apply(lambda row: (1 - row['Change_per_1']) * -100, axis=1)
-        df['Change_per_1'] = df['Close'] / df['Open']
-        df['Change_per_1'] = df.apply(lambda row: (row['Change_per_1'] -1) * -100, axis=1)
-        # print df[:10]
-        df['sig?'] = df.apply(lambda row: significant_change(row['Change_per_1'], sig_pctg), axis=1)
-        # df['sig_mc?'] = df.apply(lambda row: significant_change_multiclass(row['Change_per_1']), axis=1)
+        df['Open_1'] = df['Open'].shift(+1)
+        df['Change_per'] = (df['Open_1'] - df['Open']) / df['Open']
+        df['Change_per'] = df.apply(lambda row: (row['Change_per']) * 100, axis=1)
+        df['sig?'] = df.apply(lambda row: significant_change(row['Change_per'], sig_pctg), axis=1)
 
-        df = df.ix[:, ['Date', 'Change_per_1', 'sig?']]
+        for i in range(num_previous_changes):
+            i += 1
+            df['Change_per_{}'.format(i)] = df['Change_per'].shift(-i)
+
+        # print df[20:30]
+
+        # df = df.ix[:, ['Date', 'Change_per', 'sig?']]
         cnt_sig = 0
         for idx, row in df.iterrows():
             if row["Date"] in doc_dates.keys() and row["sig?"] == 1:
                 cnt_sig += 1
-                label = get_labels(row["Change_per_1"], sig_pctg=1)
-                l_out.write("{},{},{},{}\n".format(company, row["Date"], doc_dates[row["Date"]], label))
+                label = get_labels(row["Change_per"], sig_pctg=1)
+                l_out.write("{},{},{},{}".format(
+                    company, row["Date"], doc_dates[row["Date"]], row["Change_per"]))
+                for i in range(num_previous_changes):
+                    i += 1
+                    l_out.write(",{}".format(row['Change_per_{}'.format(i)]))
+                l_out.write(",{}\n".format(label))
         corpus_sig[company] = cnt_sig
         print company, cnt_sig
 
@@ -123,13 +130,15 @@ def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1)
 if __name__ == "__main__":
     data_path = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
     stock_dir = data_path + "stock-price-data/"
-    f_corpus = data_path + "standard-query-corpus.tsv"
+    f_corpus = data_path + "standard-query-corpus_pp.tsv"
     f_stock_mapping = data_path + "nasdaq-100.csv"
     f_labels_out = data_path + "corpus_labels.csv"
+    num_previous_changes = 20
 
     sig_pctg = 1.
 
     map_sym_comp = load_mapping(f_stock_mapping=f_stock_mapping)
     corpus_coverage = load_corpus(f_corpus=f_corpus)
 
-    sig_statis(stock_dir=stock_dir, corpus_coverage=corpus_coverage, map_sym_comp=map_sym_comp, labels_out=f_labels_out, sig_pctg=sig_pctg)
+    sig_statis(stock_dir=stock_dir, corpus_coverage=corpus_coverage, map_sym_comp=map_sym_comp, labels_out=f_labels_out,
+               sig_pctg=sig_pctg, num_previous_changes=num_previous_changes)
