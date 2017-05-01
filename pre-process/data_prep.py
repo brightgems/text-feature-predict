@@ -6,7 +6,7 @@ extract date and textual article
 
 import ast # abstract syntax trees
 import os
-import numpy
+import numpy as np
 import pandas as pd
 from collections import defaultdict
 import nltk
@@ -105,19 +105,8 @@ def extract_doc_compary(doc_info, doc_contents, f_output):
 
     document_output.close()
 
-def prep_baseline(f_corpus_raw, f_label, f_out):
-    """
-    prepare corpus for baseline feature extraction
-    :param f_corpus_raw: {company name, date, documents}
-    :param f_label:
-    :param f_out:
-    :return:
-    """
-    corpus_raw = open(f_corpus_raw, "r")
-    label = open(f_label)
-
 class lda_prep:
-    def __init__(self, path_in, path_out, vocab_size=50000, stop_words=False):
+    def __init__(self, path_in, path_out, vocab_size=50000, stop_words=False, load_collection=False):
         self.path_in = path_in
         self.path_out = path_out
         self.stop_words = stop_words
@@ -132,11 +121,18 @@ class lda_prep:
             os.stat(self.path_out)
         except:
             os.mkdir(self.path_out)
-        self.fin_names = os.listdir(self.path_in)
-        self.fout = open(self.path_out + "corpus_lda.txt", "w") # doc-term format input for lda
 
-        for fin_name in self.fin_names:
-            self.load_docs(fin_name=fin_name)
+        self.fout = open(self.path_out + "corpus_lda.txt", "w")  # doc-term format input for lda
+
+        if not load_collection:
+            self.fin_names = os.listdir(self.path_in)
+
+
+            for fin_name in self.fin_names:
+                self.load_docs(fin_name=fin_name)
+        else:
+            self.load_collection(path_in)
+
         print "collection size:", len(self.collections)
 
         self.prep_vocab()
@@ -166,6 +162,28 @@ class lda_prep:
             self.total_words_cnt += len(tokens)
             self.collections.append([company_name, line[0], tokens])
         print "done! corpus size:", len(lines), "total word count:", self.total_words_cnt
+
+    def load_collection(self, fin_name):
+        """
+        load documents from a document collection [company_name, date, document]
+        the document content in the collection needs to be pre-processed and tokenized
+        with a space delimiter
+        :param fin_name: the path to the document collection
+        """
+        print "loading documents from corpus: {}".format(fin_name)
+        for line in open(fin_name):
+            line = line.strip().split("\t")  # company_name, date, doc_content
+            company_name = line[0]
+            date = line[1]
+            content = line[2]
+            if len(content) == 0:
+                continue
+            tokens = content.split(' ')
+            for token in tokens:
+                self.wordList[token] += 1
+            self.total_words_cnt += len(tokens)
+            self.collections.append([company_name, date, tokens])
+        print "done! corpus size:", len(self.collections), "total word count:", self.total_words_cnt
 
     def prep_vocab(self):
         """
@@ -225,48 +243,132 @@ class lda_prep:
 
 class DataPoints:
     def __init__(self):
-        self.x = []
+        self.x_doc = []
+        self.x_stock = []
+        self.x_lda = []
         self.y = []
 
     def set(self, data):
-        self.x = data[0]
-        self.y = data[1]
+        self.x_doc = data[0]
+        self.y = data[-1]
+        if len(data) == 3:
+            self.set_stock(data[1])
 
-    def set_x(self, x):
-        self.x = x
+    def set_doc(self, x_doc):
+        self.x_doc = x_doc
+
+    def set_lda(self, x_lda):
+        self.x_lda = np.array(x_lda)
+
+    def set_stock(self, x_stock):
+        self.x_stock = np.array(x_stock)
 
     def set_y(self, y):
         self.y = y
 
     def clear(self):
-        self.x = []
+        self.x_doc = []
+        self.x_stock = []
+        self.x_lda = []
         self.y = []
 
 class DataProcessor:
-    def __init__(self, dataset_path_in, dataset_path_out, fvocab=None,
-                 vocab_size=None, valid_portion=None, overwrite=False):
+    def __init__(self, vocab_size=None, valid_portion=None, overwrite=False, shuffle=True):
         self.train = DataPoints()
         self.valid = DataPoints()
         self.test = DataPoints()
         self.vocab = dict() # vocab for the loaded dataset
         self.vocab_size = vocab_size # take top vocab_size vocab for loaded dataset if not None
+        self.overwrite = overwrite
+        self.use_shuffle = shuffle
+        self.sidx_train = [] # shuffled idx list for training set
+        self.sidx_test = []
 
-        # preprocess
+    def run_docs(self, f_corpus, f_meta_data, f_dataset_out, f_vocab=None):
         def _run():
-            self.load_data(dataset_path_in=dataset_path_in, shuffle=True)
-            self.gen_vocab(fvocab=fvocab)
-            self.save_data(dataset_path_out=dataset_path_out)
+            self.load_data(f_corpus, f_meta_data, shuffle=True)
+            self.gen_vocab(f_vocab=f_vocab)
+            self.save_data(f_dataset_out=f_dataset_out)
 
         try:
-            os.stat(dataset_path_out)
-            print dataset_path_out + " already exist!"
-            if overwrite:
+            os.stat(f_dataset_out)
+            print f_dataset_out + " already exist!"
+            if self.overwrite:
                 print "overwriting ..."
                 _run()
         except:
             _run()
 
-    def gen_vocab(self, fvocab=None):
+    def run_lda(self, dir_lda, f_meta_data, f_lda_out):
+        train_idx, test_idx = self.load_metadata(f_meta_data)
+        lda_data = []
+
+        paths = os.listdir(dir_lda)
+        for path_lda in paths:
+            topic_dist = self.load_lda(dir_lda + path_lda)
+            if len(topic_dist) == 0:
+                continue
+            lda_train = [topic_dist[idx] for idx in train_idx]
+            lda_test = [topic_dist[idx] for idx in test_idx]
+
+            if self.use_shuffle:
+                lda_train = [lda_train[idx] for idx in self.sidx_train]
+                lda_test = [lda_test[idx] for idx in self.sidx_test]
+
+            lda_data.append([np.array(lda_train), np.array(lda_test)])
+
+        with open(f_lda_out, "wb") as f:
+            pkl.dump(lda_data, f)
+        print "number of different topic features: {}".format(len(lda_data))
+
+
+    def load_metadata(self, f_meta_data):
+        train_idx = []
+        test_idx = []
+
+        with open(f_meta_data, "r") as f:
+            meta_data = f.readlines()
+        for lidx, meta_line in enumerate(meta_data):
+            meta_line = meta_line.strip().split(",")
+            label = int(meta_line[-1])
+            if label == 0: # train
+                train_idx.append(int(meta_line[2]))
+            elif label == 1:
+                test_idx.append(int(meta_line[2]))
+            else:
+                raise ValueError(
+                    "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
+
+        return train_idx, test_idx
+
+    def load_lda(self, path_lda):
+        topic_dist = []
+        # get metadata
+        alpha = 0.
+        try:
+            with open(path_lda + "/final.other", "r") as f:
+                lines = f.readlines()
+        except:
+            print "[warning] illegal path ignored: {}".format(path_lda)
+            return topic_dist
+        for line in lines:
+            if "alpha" in line:
+                alpha = float(line.strip().split()[-1])
+                print "alpha:", alpha,
+                break
+
+        # get topic distribution
+        with open(path_lda + "/final.gamma", "r") as f:
+            lines = f.readlines()
+        for line in lines:
+            probs = line.strip().split()
+            probs = [float(prob) - alpha for prob in probs]
+            probs_sum = sum(probs)
+            probs = [prob / probs_sum for prob in probs]
+            topic_dist.append(probs)
+        return topic_dist
+
+    def gen_vocab(self, f_vocab=None):
         """
         generate vocab from loaded dataset
         vocab are saved as dict(): word -> idx
@@ -279,14 +381,16 @@ class DataProcessor:
             return wordlist
 
         wordlist = defaultdict(int)
-        wordlist = _get_vocab(self.train.x, wordlist)
-        wordlist = _get_vocab(self.test.x, wordlist)
+        wordlist = _get_vocab(self.train.x_doc, wordlist)
+        wordlist = _get_vocab(self.test.x_doc, wordlist)
 
         wordlist = sorted(wordlist.items(), key=itemgetter(1), reverse=True)
         freq_cnt = 0.
         total_cnt = 0.
+        if not self.vocab_size:
+            self.vocab_size = len(wordlist)
         for i, word in enumerate(wordlist):
-            if self.vocab_size and len(self.vocab) < self.vocab_size:
+            if len(self.vocab) < self.vocab_size:
                 self.vocab[word[0]] = i
                 freq_cnt += word[1]
             total_cnt += word[1]
@@ -295,84 +399,128 @@ class DataProcessor:
         print "freq coverage: {}".format(freq_cnt / total_cnt)
 
         # save vocab
-        if fvocab:
-            pkl.dump(self.vocab, open(fvocab, "wb"))
+        if f_vocab:
+            pkl.dump(self.vocab, open(f_vocab, "wb"))
 
-    def load_data(self, dataset_path_in, shuffle=True):
-        print "loading from {}".format(dataset_path_in),
+    def load_data(self, f_corpus, f_meta_data):
+        """
+        load data from corpus and corpus mapping file
+        :param f_corpus: corpus {company, date, docs}, tap separated
+        :param f_meta_data: meta data, comma separated
+                            {company, date, line index in corpus (starting 0), label, train(0)/test(1)}
+        """
+        print "loading from {}".format(f_corpus)
         self.train.clear()
         self.test.clear()
 
-        with open(dataset_path_in, "r") as f:
-            lines = f.readlines()
+        with open(f_meta_data, "r") as f:
+            meta_data = f.readlines()
+        with open(f_corpus, "r") as f:
+            corpus = f.readlines()
 
-        for lidx, line in enumerate(lines):
-            line = line.strip().split(",")
-            if len(line) != 3:
-                print "warning: line {} has less than three columns".format(lidx+1)
-                continue
-            if int(line[1]) == 0: # train
-                self.train.x.append(word_tokenize(line[2])) # text
-                self.train.y.append(int(line[0])) # label
-            elif int(line[1]) == 1: # test
-                self.test.x.append(word_tokenize(line[2]))
-                self.test.y.append(int(line[0]))
-            else:
-                print "warning: fail to recognize train/test label {0} at line {1}".format(line[1], lidx)
+        for lidx, meta_line in enumerate(meta_data):
+            meta_line = meta_line.strip().split(",")
+            if len(meta_line) == 5:
+                doc = word_tokenize(corpus[int(meta_line[2])].strip().split("\t")[-1]) # get doc from corpus
+                label = int(meta_line[-2])
+                if label == 0:
+                    label = -1
+                if int(meta_line[-1]) == 0:
+                    self.train.x_doc.append(doc) # text
+                    self.train.y.append(label) # label
+                elif int(meta_line[-1]) == 1:
+                    self.test.x_doc.append(doc)
+                    self.test.y.append(label)
+                else:
+                    raise ValueError(
+                        "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
 
-        if shuffle:
+            if len(meta_line) == 26:
+                doc = word_tokenize(corpus[int(meta_line[2])].strip().split("\t")[-1])  # get doc from corpus
+                label = int(meta_line[-2])
+                if label == 0:
+                    label = -1
+                stock = [float(s) for s in meta_line[3:-2]]
+                #fixme: NAN problem in stock change
+                if np.any(np.isnan(np.array(stock))):
+                    nan_idx = np.argwhere(np.isnan(np.array(stock)))
+                    for idx in nan_idx:
+                        stock[idx[0]] = 0.
+                assert len(stock) == 21, "invalid number of stock changes"
+                if int(meta_line[-1]) == 0:
+                    self.train.x_doc.append(doc)  # text
+                    self.train.x_stock.append(stock) # stock change, today and prev 20 days
+                    self.train.y.append(label)  # label
+                elif int(meta_line[-1]) == 1:
+                    self.test.x_doc.append(doc)
+                    self.test.x_stock.append(stock)
+                    self.test.y.append(label)
+                else:
+                    raise ValueError(
+                        "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
+
+        if self.use_shuffle:
             self.shuffle()
-        print "done!"
 
     def shuffle(self):
         print "using shuffling...",
-        sidx = numpy.random.permutation(len(self.train.x))
-        self.train.x = [self.train.x[idx] for idx in sidx]
-        self.train.y = [self.train.y[idx] for idx in sidx]
-        sidx = numpy.random.permutation(len(self.test.x))
-        self.test.x = [self.test.x[idx] for idx in sidx]
-        self.test.y = [self.test.y[idx] for idx in sidx]
+        self.sidx_train = np.random.permutation(len(self.train.y))
+        self.train.x_doc = [self.train.x_doc[idx] for idx in self.sidx_train]
+        if len(self.train.x_stock) > 0:
+            self.train.x_stock = [self.train.x_stock[idx] for idx in self.sidx_train]
+        self.train.y = [self.train.y[idx] for idx in self.sidx_train]
+
+        self.sidx_test = np.random.permutation(len(self.test.y))
+        self.test.x_doc = [self.test.x_doc[idx] for idx in self.sidx_test]
+        if len(self.test.x_stock) > 0:
+            self.test.x_stock = [self.test.x_stock[idx] for idx in self.sidx_test]
+        self.test.y = [self.test.y[idx] for idx in self.sidx_test]
+        print "done!"
 
     def set_valid(self, valid_portion=0.15):
         """
         set valid_portion of training data into validation set
         """
-        n_sample = len(self.train.x)
-        sidx = numpy.random.permutation(n_sample)
-        n_train = int(numpy.round(n_sample * (1 - valid_portion)))
-        self.valid.x = [self.train.x[idx] for idx in sidx[n_train:]]
+        n_sample = len(self.train.y)
+        sidx = np.random.permutation(n_sample)
+        n_train = int(np.round(n_sample * (1 - valid_portion)))
+        self.valid.x_doc = [self.train.x_doc[idx] for idx in sidx[n_train:]]
+        self.train.x_doc = [self.train.x_doc[idx] for idx in sidx[:n_train]]
+        if len(self.train.x_stock) > 0:
+            self.valid.x_stock = [self.train.x_stock[idx] for idx in sidx[n_train:]]
+            self.train.x_stock = [self.train.x_stock[idx] for idx in sidx[:n_train]]
         self.valid.y = [self.train.y[idx] for idx in sidx[n_train:]]
-        self.train.x = [self.train.x[idx] for idx in sidx[:n_train]]
         self.train.y = [self.train.y[idx] for idx in sidx[:n_train]]
 
-    def save_data(self, dataset_path_out):
+    def save_data(self, f_dataset_out):
         print "saving to file ...",
-        train = [[" ".join(line) for line in self.train.x], self.train.y]
-        test = [[" ".join(line) for line in self.test.x], self.test.y]
-        valid = [[" ".join(line) for line in self.valid.x], self.valid.y]
-        with open(dataset_path_out, "wb") as f:
+        if len(self.train.x_stock) > 0:
+            train = [[" ".join(line) for line in self.train.x_doc], self.train.x_stock, self.train.y]
+            test = [[" ".join(line) for line in self.test.x_doc], self.test.x_stock, self.test.y]
+            valid = [[" ".join(line) for line in self.valid.x_doc], self.valid.x_stock, self.valid.y]
+        else:
+            train = [[" ".join(line) for line in self.train.x_doc], self.train.y]
+            test = [[" ".join(line) for line in self.test.x_doc], self.test.y]
+            valid = [[" ".join(line) for line in self.valid.x_doc], self.valid.y]
+        with open(f_dataset_out, "wb") as f:
             pkl.dump(train, f)
             pkl.dump(test, f)
             pkl.dump(valid, f)
         print "done!"
-        print "train:", len(self.train.x), "valid:", len(self.valid.x), "test:", len(self.test.x)
+        print "train:", len(self.train.y), "valid:", len(self.valid.y), "test:", len(self.test.y)
 
 
 if __name__ == "__main__":
+    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    #dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
+    f_corpus = dir_data + "standard-query-corpus_pp.tsv"
+    f_meta_data = dir_data + "corpus_labels_split_balanced_change.csv"
+    f_dataset_out = dir_data + "dataset/corpus_bp_stock_cls.npz"
+    f_vocab = dir_data + "dataset/vocab_stock.npz"
 
-    path_raw = '../../data/crawled/'
-    path_extracted = '../../data/extracted/'
-    path_lda = '../../data/lda/'
+    dir_lda = dir_data + "lda_results/"
+    f_lda_out = dir_data + "dataset/lda_features.npz"
 
-    # extract_docs(path_in=path_raw, path_out=path_extracted)
-
-    '''
-    data_prep = lda_prep(path_in=path_extracted, path_out=path_lda, vocab_size=50000)
-    data_prep.comb_docs(fout_name="corpus-raw.txt")
-    data_prep.prep_doc_term()
-    '''
-
-    corpus_in = "../../data/corpus/corpus_label_doc.csv"
-    corpus_out = "../../data/corpus/corpus_bow.npz"
-    data_prep = DataProcessor(dataset_path_in=corpus_in, dataset_path_out=corpus_out,
-                              vocab_size=100000, overwrite=False)
+    preprocessor = DataProcessor(overwrite=True, shuffle=True)
+    preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out, f_vocab=f_vocab)
+    preprocessor.run_lda(dir_lda=dir_lda, f_meta_data=f_meta_data, f_lda_out=f_lda_out)
