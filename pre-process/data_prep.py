@@ -283,6 +283,8 @@ class DataProcessor:
         self.use_shuffle = shuffle
         self.sidx_train = [] # shuffled idx list for training set
         self.sidx_test = []
+        self.topic_dist = []
+        self.topic_hist = []
 
     def run_docs(self, f_corpus, f_meta_data, f_dataset_out, f_vocab=None):
         def _run():
@@ -299,23 +301,39 @@ class DataProcessor:
         except:
             _run()
 
-    def run_lda(self, dir_lda, f_meta_data, f_lda_out):
-        train_idx, test_idx = self.load_metadata(f_meta_data)
+    def run_lda(self, dir_lda, f_meta_data, f_lda_out, alphas, window_sizes):
+        train_idx, test_idx, lda_hist_idx = self.load_metadata(f_meta_data)
         lda_data = []
 
-        paths = os.listdir(dir_lda)
-        for path_lda in paths:
-            topic_dist = self.load_lda(dir_lda + path_lda)
-            if len(topic_dist) == 0:
-                continue
-            lda_train = [topic_dist[idx] for idx in train_idx]
-            lda_test = [topic_dist[idx] for idx in test_idx]
+        def _set_train(feature_lda, feature=""):
+            lda_train = [feature_lda[idx] for idx in train_idx]
+            lda_test = [feature_lda[idx] for idx in test_idx]
 
             if self.use_shuffle:
                 lda_train = [lda_train[idx] for idx in self.sidx_train]
                 lda_test = [lda_test[idx] for idx in self.sidx_test]
 
-            lda_data.append([np.array(lda_train), np.array(lda_test)])
+            lda_data.append([np.array(lda_train), np.array(lda_test), feature])
+
+        paths = os.listdir(dir_lda)
+        for path_lda in paths:
+            # for each k
+            self.load_lda(dir_lda + path_lda)
+
+            for alpha in alphas:
+                for window_size in window_sizes:
+                    topic_hist = self.gen_topic_hist(lda_hist_idx=lda_hist_idx, alpha=alpha, window_size=window_size)
+
+                    # add
+                    feature = "alpha={}, L={}".format(alpha, window_size)
+                    feature_lda = [self.topic_dist[i] + topic_hist[i] for i in range(len(self.topic_dist))]
+                    _set_train(feature_lda, feature)
+
+                    # concatenate
+                    feature += " (cont)"
+                    feature_lda = [np.concatenate((self.topic_dist[i], topic_hist[i]))
+                                   for i in range(len(self.topic_dist))]
+                    _set_train(feature_lda, feature)
 
         with open(f_lda_out, "wb") as f:
             pkl.dump(lda_data, f)
@@ -325,11 +343,15 @@ class DataProcessor:
     def load_metadata(self, f_meta_data):
         train_idx = []
         test_idx = []
+        lda_hist_idx = []
 
         with open(f_meta_data, "r") as f:
             meta_data = f.readlines()
         for lidx, meta_line in enumerate(meta_data):
             meta_line = meta_line.strip().split(",")
+            if len(meta_line) == 46:
+                hist_idx = [int(s) for s in meta_line[-3:-23:-1]]
+                lda_hist_idx.append(hist_idx)
             label = int(meta_line[-1])
             if label == 0: # train
                 train_idx.append(int(meta_line[2]))
@@ -339,10 +361,10 @@ class DataProcessor:
                 raise ValueError(
                     "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
 
-        return train_idx, test_idx
+        return train_idx, test_idx, lda_hist_idx
 
     def load_lda(self, path_lda):
-        topic_dist = []
+        self.topic_dist = []
         # get metadata
         alpha = 0.
         try:
@@ -350,7 +372,7 @@ class DataProcessor:
                 lines = f.readlines()
         except:
             print "[warning] illegal path ignored: {}".format(path_lda)
-            return topic_dist
+            return 0.
         for line in lines:
             if "alpha" in line:
                 alpha = float(line.strip().split()[-1])
@@ -365,8 +387,19 @@ class DataProcessor:
             probs = [float(prob) - alpha for prob in probs]
             probs_sum = sum(probs)
             probs = [prob / probs_sum for prob in probs]
-            topic_dist.append(probs)
-        return topic_dist
+            self.topic_dist.append(np.array(probs))
+
+    def gen_topic_hist(self, lda_hist_idx, alpha=1., window_size=1):
+        topic_hist = []
+        for tidx, topic_dist in enumerate(self.topic_dist):
+            hist = np.zeros(topic_dist.shape)
+            for widx in range(1, window_size+1):
+                hidx = lda_hist_idx[tidx][widx]
+                if hidx > 0:
+                    hist += alpha * self.topic_dist[hidx]
+                alpha *= alpha
+            topic_hist.append(hist)
+        return topic_hist
 
     def gen_vocab(self, f_vocab=None):
         """
