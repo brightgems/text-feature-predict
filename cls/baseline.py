@@ -149,6 +149,10 @@ class Baselines:
                     print "\tngrams: {}".format(feature),
                     self.get_ngrams(ngrams=ngrams, use_tfidf=use_tfidf)
                     sys.stdout.flush()
+                else:
+                    feature = "None"
+                    if use_tfidf:
+                        continue
 
                 # + stock change
                 if self.stock_hist:
@@ -177,38 +181,80 @@ class Baselines:
                         self.x_train = self.x_train[:, :-num_lda]
                         self.x_test = self.x_test[:, :-num_lda]
 
-
     def run_tune(self):
         results = []
+        features = []
 
-        for feature in Features:
-            sys.stdout.flush()
-            print "\ntuning:", feature
-            eval("self.feature_" + feature)(use_tfidf=False)
-            results.append(self.tune_LR())
-            print "tuning:", feature + "-TFIDF"
-            eval("self.feature_" + feature)(use_tfidf=True)
-            results.append(self.tune_LR())
-            sys.stdout.flush()
+        lda_features = None
+        if self.f_lda:
+            lda_features = load_lda(self.f_lda)
 
-        cnt = 0
+        for ngrams in Features:
+            for use_tfidf in [False, True]:
+                # for sys_out
+                feature = "ngrams: {}".format(ngrams)
+                if use_tfidf:
+                    feature += "-TFIDF"
+
+                # ngrams baseline
+                if len(ngrams) > 0:
+                    print feature
+                    self.get_ngrams(ngrams=ngrams, use_tfidf=use_tfidf, run_cls=False)
+                    results.append(self.tune_LR(feature=feature))
+                    features.append(feature)
+                    sys.stdout.flush()
+                else:
+                    feature = "ngrams: None"
+                    if use_tfidf:
+                        continue
+
+                # + stock change
+                if self.stock_hist:
+                    for stock_num in self.stock_hist:
+                        new_feature = "{}\tstock: t={}".format(feature, stock_num)
+                        print new_feature
+                        num_new = self.add_stock_change(stock_num=stock_num, run_cls=False, reset=True)
+                        results.append(self.tune_LR(feature=new_feature))
+                        features.append(new_feature)
+                        sys.stdout.flush()
+
+                # + topic
+                if lda_features:
+                    for topic_dist in lda_features:
+                        new_feature = "{}\ttopic: k={}, {}".format(feature, topic_dist[0].shape[1], topic_dist[-1])
+                        print new_feature
+                        num_new = self.add_lda(topic_dist=topic_dist, run_cls=False, reset=True)
+                        results.append(self.tune_LR(feature=new_feature))
+                        features.append(new_feature)
+                        sys.stdout.flush()
+
+                # + topic + stock change
+                if self.stock_hist and lda_features:
+                    for topic_dist in lda_features:
+                        num_lda = self.add_lda(topic_dist=topic_dist, run_cls=False, reset=False)
+                        for stock_num in self.stock_hist:
+                            new_feature = "{}\ttopic: k={}, {},\tstock: t={}"\
+                                .format(feature, topic_dist[0].shape[1], topic_dist[-1], stock_num)
+                            print new_feature
+                            num_new = self.add_stock_change(stock_num=stock_num, run_cls=False, reset=True)
+                            results.append(self.tune_LR(feature=new_feature))
+                            features.append(new_feature)
+                            sys.stdout.flush()
+                        # reset
+                        self.x_train = self.x_train[:, :-num_lda]
+                        self.x_test = self.x_test[:, :-num_lda]
 
         print '============================================\nfinal results\n' \
               '============================================'
-        for feature in Features:
-            print "feature: {}".format(feature),
-            print "\t[Accuracy] train:", results[cnt][1], "\ttest:", results[cnt][0]
-            self.cls_model = results[cnt][2]
+        for idx in range(len(results)):
+            print features[idx],
+            print "\t[Accuracy] train:", results[idx][1], "\ttest:", results[idx][0]
+            self.cls_model = results[idx][2]
             # self.get_top_features(N=50, feature=feature)
-            cnt += 1
-            print "feature: {}".format(feature+"-TFIDF"),
-            print "\t[Accuracy] train:", results[cnt][1], "\ttest:", results[cnt][0]
-            self.cls_model = results[cnt][2]
-            # self.get_top_features(N=50, feature=feature)
-            cnt += 1
         sys.stdout.flush()
 
-        print "\nstatistical info:"
+        print "============================================\nstatistical info:\n" \
+              '============================================'
         print "\tvocab size:", len(self.vocab)
         if self.vocab_ngrams:
             print "\tn-grams (n=2)", len(self.vocab_ngrams)
@@ -216,13 +262,14 @@ class Baselines:
         print "\nvocabulary:", textwrap.fill(str(self.vocab), width=100)
         print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100), "\n"
 
-    def get_ngrams(self, ngrams, use_tfidf, reset=False):
+    def get_ngrams(self, ngrams, use_tfidf, run_cls=True, reset=False):
         """
         :param ngrams: "BOW" or "ngrams"
         :param use_tfidf: whether to use TFIDF
         """
         eval("self.feature_" + ngrams)(use_tfidf=use_tfidf)
-        self.cls_LR()
+        if run_cls:
+            self.cls_LR()
         if reset:
             self.x_train = None
             self.x_test = None
@@ -359,14 +406,14 @@ class Baselines:
         accu = accuracy_score(self.data_reader.test.y, self.predicted)
         print "\t[Accuracy] train:", accu_train, "\ttest:", accu
 
-    def tune_LR(self):
+    def tune_LR(self, feature=None):
         cv_model = GridSearchCV(LogisticRegression(penalty='l2', max_iter=500),
                                 param_grid=param_grid_LR,
                                 verbose=5, return_train_score=True)
         cv_model.fit(self.x_train, self.data_reader.train.y)
         print "\n======================================"
         print "Tuning complete"
-        print "Best score (on left out data):", cv_model.best_score_
+        print "Best score (on left out data): {}".format(cv_model.best_score_)
         print "Tuning summary:"
         summary = ["split0_train_score", "split0_test_score",
                    "split1_train_score", "split1_test_score",
@@ -376,15 +423,16 @@ class Baselines:
         print "======================================\n"
 
         print "\n======================================"
-        print "Best model:", cv_model.best_params_
-        print "vocab size:", len(self.vocab)
+        if feature:
+            print "[Features] {}".format(feature)
+        print "[Best model] {}".format(cv_model.best_params_)
+        print "[Vocab] {}".format(len(self.vocab))
         if self.vocab_ngrams:
-            print "n-grams (n=2)", len(self.vocab_ngrams)
-        print "train size:", self.x_train.shape
-        print "test size:", self.x_test.shape
+            print "[N-grams (N<=2)] {}".format(len(self.vocab_ngrams))
+        print "[Size] train:{}\ttest:{}".format(self.x_train.shape, self.x_test.shape)
         accu_train = cv_model.score(self.x_train, self.data_reader.train.y)
         accu = cv_model.score(self.x_test, self.data_reader.test.y)
-        print "[Accuracy] train:", accu_train, "\ttest:", accu
+        print "[Accuracy] train:{}\ttest:{}".format(accu_train, accu)
         print "======================================\n"
         return (accu, accu_train, cv_model.best_estimator_)
 
