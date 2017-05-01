@@ -100,14 +100,14 @@ class CustomSelectKBest(SelectKBest):
   def transform_vectorizer(self, cv):
     cv.vocabulary_ = self.transform_vocabulary(cv.vocabulary_)
 
-Features = ["BOW", "ngrams"]
+Features = ["", "BOW", "ngrams"]
 param_grid_LR = {'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000],
                  'solver': ['liblinear', 'newton-cg', 'lbfgs']}
 
 class Baselines:
     def __init__(self, data_reader, vocab=None, vocab_ngrams=None,
                  vocab_size=100000, ngram_order=3, ngram_num=100000,
-                 stock_today=False, stock_hist=20, f_lda=None,
+                 stock_today=False, stock_hist=None, f_lda=None,
                  verbose=0,
                  use_chi_square=None, top_k=10000000):
         self.data_reader = data_reader
@@ -121,7 +121,7 @@ class Baselines:
         if self.vocab_ngrams:
             self.ngrams_num = len(self.vocab_ngrams)
         self.stock_today = stock_today # whether to use today's stock change as feature
-        self.stock_hist = stock_hist # number of historical stock change to include as features
+        self.stock_hist = stock_hist # number of historical stock change to include as features (list)
         self.f_lda = f_lda # path to lda results (list)
         self.verbose = verbose
         self.x_train = None
@@ -133,38 +133,50 @@ class Baselines:
         self.top_k = top_k
 
     def run(self):
-        def _get_feature(feature, use_tfidf):
-            eval("self.feature_" + feature)(use_tfidf=use_tfidf)
-            if use_tfidf:
-                print "\tfeature: {}".format(feature+"-TFIDF"),
-            else:
-                print "\tfeature: {}".format(feature),
-            self.cls_LR()
-            #self.get_top_features(N=30, feature=feature)
-
-        def _add_lda(feature, use_tfidf, lda_features):
-            for topic_dist in lda_features:
-                topic_num = topic_dist[0].shape[1]
-                if use_tfidf:
-                    print "\tfeature: {}-TFIDF-{}topic".format(feature, topic_num),
-                else:
-                    print "\tfeature: {}-{}topic".format(feature, topic_num),
-                self.feature_lda(topic_dist)
-                self.cls_LR()
-                self.x_train = self.x_train[:, :-topic_num]
-                self.x_test = self.x_test[:, :-topic_num]
-
+        lda_features = None
         if self.f_lda:
             lda_features = load_lda(self.f_lda)
 
-        for feature in Features:
-            _get_feature(feature, use_tfidf=False)
-            if self.f_lda:
-                _add_lda(feature, use_tfidf=False, lda_features=lda_features)
-            _get_feature(feature, use_tfidf=True)
-            if self.f_lda:
-                _add_lda(feature, use_tfidf=False, lda_features=lda_features)
-            sys.stdout.flush()
+        for ngrams in Features:
+            for use_tfidf in [False, True]:
+                # for sys_out
+                feature = ngrams
+                if use_tfidf:
+                    feature += "-TFIDF"
+
+                # ngrams baseline
+                if len(ngrams) > 0:
+                    print "\tngrams: {}".format(feature),
+                    self.get_ngrams(ngrams=ngrams, use_tfidf=use_tfidf)
+                    sys.stdout.flush()
+
+                # + stock change
+                if self.stock_hist:
+                    for stock_num in self.stock_hist:
+                        print "\tngrams: {},\tstock: t={}".format(feature, stock_num),
+                        num_new = self.add_stock_change(stock_num=stock_num, run_cls=True, reset=True)
+                        sys.stdout.flush()
+
+                # + topic
+                if lda_features:
+                    for topic_dist in lda_features:
+                        print "\tngrams: {},\ttopic: k={}, {}".format(feature, topic_dist[0].shape[1], topic_dist[-1]),
+                        num_new = self.add_lda(topic_dist=topic_dist, run_cls=True, reset=True)
+                        sys.stdout.flush()
+
+                # + topic + stock change
+                if self.stock_hist and lda_features:
+                    for topic_dist in lda_features:
+                        num_lda = self.add_lda(topic_dist=topic_dist, run_cls=False, reset=False)
+                        for stock_num in self.stock_hist:
+                            print "\tngrams: {},\ttopic: k={}, {},\tstock: t={}"\
+                                .format(feature, topic_dist[0].shape[1], topic_dist[-1], stock_num),
+                            num_new = self.add_stock_change(stock_num=stock_num, run_cls=True, reset=True)
+                            sys.stdout.flush()
+                        # reset
+                        self.x_train = self.x_train[:, :-num_lda]
+                        self.x_test = self.x_test[:, :-num_lda]
+
 
     def run_tune(self):
         results = []
@@ -204,9 +216,88 @@ class Baselines:
         print "\nvocabulary:", textwrap.fill(str(self.vocab), width=100)
         print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100), "\n"
 
+    def get_ngrams(self, ngrams, use_tfidf, reset=False):
+        """
+        :param ngrams: "BOW" or "ngrams"
+        :param use_tfidf: whether to use TFIDF
+        """
+        eval("self.feature_" + ngrams)(use_tfidf=use_tfidf)
+        self.cls_LR()
+        if reset:
+            self.x_train = None
+            self.x_test = None
+
+    def add_lda(self, topic_dist, run_cls=True, reset=True):
+        """
+        :param topic_dist: content from lda feature file (list), [train, test, description]
+        :param run_cls: whether to run classifer with current features
+        :param reset: whether to reset feature matrix
+        :return: number of new features added
+        """
+        topic_num = topic_dist[0].shape[1]
+        self.feature_lda(topic_dist) # add features
+        if run_cls:
+            self.cls_LR()
+        if reset:
+            self.x_train = self.x_train[:, :-topic_num]
+            self.x_test = self.x_test[:, :-topic_num]
+            return 0
+        else:
+            return topic_num
+
+    def add_stock_change(self, stock_num=10, run_cls=True, reset=True):
+        """
+        :param stock_num: number of historical stock change to add
+        :param run_cls: whether train classifier with current feature set
+        :param reset: whether to reset feature matrix
+        :return: number of new features added
+        """
+        self.feature_stock_change(stock_hist=stock_num) # add features
+        if run_cls:
+            self.cls_LR() # train cls
+        if reset:
+            self.x_train = self.x_train[:, :-stock_num]
+            self.x_test = self.x_test[:, :-stock_num]
+            return 0
+        else:
+            return stock_num
+
     def feature_lda(self, topic_dist):
-        self.x_train = hstack([self.x_train, topic_dist[0]]).tocsr()
-        self.x_test = hstack([self.x_test, topic_dist[1]]).tocsr()
+        # add topic distributions
+        print "\ttopic: {}".format(topic_dist[-1]),
+        if self.x_train is None:
+            self.x_train = topic_dist[0]
+            self.x_test = topic_dist[1]
+        else:
+            self.x_train = hstack([self.x_train, topic_dist[0]]).tocsr()
+            self.x_test = hstack([self.x_test, topic_dist[1]]).tocsr()
+
+    def feature_stock_change(self, stock_hist=0):
+        # add stock changes as features
+        if len(self.data_reader.train.x_stock) > 0 and stock_hist > 0:
+            stock_start = 1
+            stock_end = stock_start + stock_hist
+            if self.stock_today:
+                stock_start = 0
+            if self.x_train is None:
+                self.x_train = self.data_reader.train.x_stock[:, stock_start:stock_end]
+                self.x_test = self.data_reader.test.x_stock[:, stock_start:stock_end]
+                if len(self.data_reader.valid.y) > 0:
+                    self.x_valid = self.data_reader.valid.x_stock[:, stock_start:stock_end]
+            else:
+                self.x_train = hstack([self.x_train, self.data_reader.train.x_stock[:, stock_start:stock_end]]).tocsr()
+                self.x_test = hstack([self.x_test, self.data_reader.test.x_stock[:, stock_start:stock_end]]).tocsr()
+                if len(self.data_reader.valid.y) > 0:
+                    self.x_valid = hstack([self.x_valid,
+                                           self.data_reader.valid.x_stock[:, stock_start:stock_end]]).tocsr()
+            """
+            ##### debug:NAN problem ######
+            self.x_train = np.array(self.x_train.todense())
+            print np.any(np.isnan(self.x_train))
+            print np.argwhere(np.isnan(self.x_train))
+            print np.argwhere(np.isnan(self.data_reader.train.x_stock))
+            print np.all(np.isfinite(self.x_train))
+            """
 
     def feature_BOW(self, use_tfidf=False):
         bow_transformer = CountVectorizer(vocabulary=self.vocab,
@@ -232,25 +323,6 @@ class Baselines:
             if len(self.data_reader.valid.y) > 0:
                 self.x_valid = tfidf_transformer.fit_transform(self.x_valid)
 
-        # add stock price features
-        if len(self.data_reader.train.x_stock) > 0 and self.stock_hist > 0:
-            stock_start = 1
-            stock_end = stock_start + self.stock_hist
-            if self.stock_today:
-                stock_start = 0
-            self.x_train = hstack([self.x_train, self.data_reader.train.x_stock[:, stock_start:stock_end]]).tocsr()
-            """
-            ##### debug:NAN problem ######
-            self.x_train = np.array(self.x_train.todense())
-            print np.any(np.isnan(self.x_train))
-            print np.argwhere(np.isnan(self.x_train))
-            print np.argwhere(np.isnan(self.data_reader.train.x_stock))
-            print np.all(np.isfinite(self.x_train))
-            """
-            self.x_test = hstack([self.x_test, self.data_reader.test.x_stock[:, stock_start:stock_end]]).tocsr()
-            if len(self.data_reader.valid.y) > 0:
-                self.x_valid = hstack([self.x_valid, self.data_reader.valid.x_stock[:, stock_start:stock_end]]).tocsr()
-
     def feature_ngrams(self, use_tfidf=False):
         ngrams_transfomer = CountVectorizer(vocabulary=self.vocab_ngrams,
                                             max_features=self.ngrams_num,
@@ -275,17 +347,6 @@ class Baselines:
             self.x_test = tfidf_transformer.fit_transform(self.x_test)
             if len(self.data_reader.valid.y) > 0:
                 self.x_valid = tfidf_transformer.fit_transform(self.x_valid)
-
-        # add stock price features
-        if len(self.data_reader.train.x_stock) > 0 and self.stock_hist > 0:
-            stock_start = 1
-            stock_end = stock_start + self.stock_hist
-            if self.stock_today:
-                stock_start = 0
-            self.x_train = hstack([self.x_train, self.data_reader.train.x_stock[:, stock_start:stock_end]]).tocsr()
-            self.x_test = hstack([self.x_test, self.data_reader.test.x_stock[:, stock_start:stock_end]]).tocsr()
-            if len(self.data_reader.valid.y) > 0:
-                self.x_valid = hstack([self.x_valid, self.data_reader.valid.x_stock[:, stock_start:stock_end]]).tocsr()
 
     def cls_LR(self):
         self.cls_model = LogisticRegression(C=1, solver='lbfgs',
@@ -326,7 +387,6 @@ class Baselines:
         print "[Accuracy] train:", accu_train, "\ttest:", accu
         print "======================================\n"
         return (accu, accu_train, cv_model.best_estimator_)
-
 
     def get_top_features(self, N=30, feature="BOW"):
         # reversed dictionary (idx -> term)
