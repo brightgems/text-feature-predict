@@ -315,7 +315,7 @@ class DataProcessor:
         except:
             _run()
 
-    def run_lda(self, dir_lda, f_lda_out, alphas, window_sizes, f_meta_data=None):
+    def run_lda(self, dir_lda, f_lda_out, alphas, window_sizes, f_meta_data=None, f_sidx=None):
         """
         output format: a list of topic features
         format: list of [train(ndarray, #sample * #feature), test (ndarray), description]
@@ -323,11 +323,14 @@ class DataProcessor:
         print "generating lda features ..."
         if len(self.train_idx) == 0 and f_meta_data:
             self.load_metadata(f_meta_data)
-        lda_data = []
+        feature_lda_all = []
         paths = os.listdir(dir_lda)
 
-        def _set_feature(train, test, feature=""):
-            if self.use_shuffle and len(self.sidx_train) > 0:
+        def _set_feature(train, test, lda_data, feature=""):
+            if self.use_shuffle:
+                if len(self.sidx_train) == 0:
+                    self.load_sidx(f_sidx)
+                print "use shuffling"
                 train = [train[idx] for idx in self.sidx_train]
                 test = [test[idx] for idx in self.sidx_test]
             lda_data.append([np.array(train), np.array(test), feature])
@@ -337,15 +340,20 @@ class DataProcessor:
             tmp = self.load_lda(dir_lda + path_lda)
             if tmp == 0:
                 continue
+            feature_lda = []
             train_lda_today = [self.topic_dist[doc_idx] for doc_idx in self.train_idx]
             test_lda_today = [self.topic_dist[doc_idx] for doc_idx in self.test_idx]
+            _set_feature(train_lda_today, test_lda_today, feature_lda, feature="")
 
             print "generating historical features"
             for alpha in alphas:
                 print "\talpha={}".format(alpha)
                 for window_size in window_sizes:
                     self.gen_topic_hist(alpha=alpha, window_size=window_size)
+                    feature = "alpha={}, L={}".format(alpha, window_size)
+                    _set_feature(self.train_lda_hist, self.test_lda_hist, feature_lda, feature)
 
+                    """
                     # add together
                     feature = "alpha={}, L={}".format(alpha, window_size)
                     train_lda = [train_lda_today[i] + self.train_lda_hist[i]
@@ -361,12 +369,18 @@ class DataProcessor:
                     test_lda = [np.concatenate((test_lda_today[i], self.test_lda_hist[i]))
                                  for i in range(len(test_lda_today))]
                     _set_feature(train_lda, test_lda, feature)
+                    """
+
+            feature_lda_all.append(feature_lda)
+
 
         # save
         print "saving to file...",
         with open(f_lda_out, "wb") as f:
-            pkl.dump(lda_data, f)
-        print "done! #different topic features: {}".format(len(lda_data))
+            pkl.dump(feature_lda_all, f)
+        print "done!"
+        print "\t#different number of topics: {}".format(len(feature_lda_all))
+        print "\t#different history combination: {}".format(len(feature_lda_all[0]))
 
     def reset_idx(self):
         self.train_idx = []  # doc idx for training
@@ -488,20 +502,22 @@ class DataProcessor:
 
         for i, lda_hist in enumerate(self.train_lda_hist_idx):
             hist = np.zeros(self.topic_dist[0].shape)
+            weight = alpha
             for w in xrange(window_size):
                 doc_idx = lda_hist[w]
                 if doc_idx > 0: # not -1
-                    hist += alpha * self.topic_dist[doc_idx]
-                alpha *= alpha
+                    hist += weight * self.topic_dist[doc_idx]
+                weight *= alpha
             self.train_lda_hist.append(hist)
 
         for i, lda_hist in enumerate(self.test_lda_hist_idx):
             hist = np.zeros(self.topic_dist[0].shape)
+            weight = alpha
             for w in xrange(window_size):
                 doc_idx = lda_hist[w]
                 if doc_idx > 0: # not -1
-                    hist += alpha * self.topic_dist[doc_idx]
-                alpha *= alpha
+                    hist += weight * self.topic_dist[doc_idx]
+                weight *= alpha
             self.test_lda_hist.append(hist)
 
     def gen_vocab(self, f_vocab=None):
@@ -539,7 +555,7 @@ class DataProcessor:
             pkl.dump(self.vocab, open(f_vocab, "wb"))
 
     def shuffle(self):
-        print "using shuffling...",
+        # print "using shuffling...",
         self.sidx_train = np.random.permutation(len(self.train.y))
         self.train.x_doc = [self.train.x_doc[idx] for idx in self.sidx_train]
         if len(self.train.x_stock) > 0:
@@ -585,10 +601,27 @@ class DataProcessor:
         print "done!"
         print "train:", len(self.train.y), "valid:", len(self.valid.y), "test:", len(self.test.y)
 
+    def save_labels(self, f_labels_out):
+        print "saving labels to file ..."
+        with open(f_labels_out, "wb") as f:
+            pkl.dump(self.train.y, f)
+            pkl.dump(self.test.y, f)
+
+    def load_sidx(self, f_sidx):
+        with open(f_sidx, "rb") as f:
+            self.sidx_train = pkl.load(f)
+            self.sidx_test = pkl.load(f)
+
+    def save_sidx(self, f_sidx_out):
+        print "saving shuffled indexes to file ..."
+        with open(f_sidx_out, "wb") as f:
+            pkl.dump(self.sidx_train, f)
+            pkl.dump(self.sidx_test, f)
+
 
 if __name__ == "__main__":
-    #dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
-    dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/"
+    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    #dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/"
     f_corpus = dir_data + "standard-query-corpus_pp.tsv"
     f_meta_data = dir_data + "corpus_labels_split_balanced_change.csv"
     f_dataset_out = dir_data + "dataset/corpus_bp_stock_cls.npz"
@@ -596,11 +629,15 @@ if __name__ == "__main__":
 
     dir_lda = dir_data + "lda_result_20170411/"
     f_lda_out = dir_data + "dataset/lda.npz"
+    f_labels = dir_data + "dataset/labels.npz"
+    f_sidx = dir_data + "dataset/rand_idx.npz"
     alphas = [1., 0.9, 0.8, 0.7, 0.6]
     window_sizes = [1, 3, 5, 10, 20]
 
     preprocessor = DataProcessor(overwrite=True, shuffle=True)
     preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out, f_vocab=f_vocab)
+    preprocessor.save_labels(f_labels_out=f_labels)
+    preprocessor.save_sidx(f_sidx_out=f_sidx)
     preprocessor.run_lda(dir_lda=dir_lda, f_lda_out=f_lda_out,
                          alphas=alphas, window_sizes=window_sizes,
                          f_meta_data=f_meta_data)
