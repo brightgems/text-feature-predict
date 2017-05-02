@@ -100,7 +100,7 @@ class CustomSelectKBest(SelectKBest):
   def transform_vectorizer(self, cv):
     cv.vocabulary_ = self.transform_vocabulary(cv.vocabulary_)
 
-Features = ["", "BOW", "ngrams"]
+Features = ["BOW", "ngrams"]
 param_grid_LR = {'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000],
                  'solver': ['liblinear', 'newton-cg', 'lbfgs']}
 
@@ -141,10 +141,6 @@ class Baselines:
             self.y_test = self.data_reader.test.y
 
     def run_ngrams(self):
-        #lda_features = None
-        #if self.f_lda:
-            #lda_features = load_lda(self.f_lda)
-
         for ngrams in Features:
             for use_tfidf in [False, True]:
                 # for sys_out
@@ -155,51 +151,23 @@ class Baselines:
                 # ngrams baseline
                 if len(ngrams) > 0:
                     print "\tngrams: {}".format(feature),
-                    self.get_ngrams(ngrams=ngrams, use_tfidf=use_tfidf)
+                    self.get_ngrams(ngrams=ngrams, use_tfidf=use_tfidf, run_cls=True, reset=False)
                     sys.stdout.flush()
                 else:
                     feature = "None"
                     if use_tfidf:
                         continue
 
-                # + stock change
+                # ngrams + stock change
                 if self.stock_hist:
                     for stock_num in self.stock_hist:
                         print "\tngrams: {},\tstock: t={}".format(feature, stock_num),
                         self.add_stock_change(stock_num=stock_num, run_cls=True, reset=True)
                         sys.stdout.flush()
 
-                """
-                # + topic
-                if lda_features:
-                    for topic_dist in lda_features:
-                        print "\tngrams: {},\ttopic: k={}, {}".format(feature, topic_dist[0].shape[1], topic_dist[-1]),
-                        num_new = self.add_lda(topic_dist=topic_dist, run_cls=True, reset=True)
-                        sys.stdout.flush()
-
-                # + topic + stock change
-                if self.stock_hist and lda_features:
-                    for topic_dist in lda_features:
-                        num_lda = self.add_lda(topic_dist=topic_dist, run_cls=False, reset=False)
-                        for stock_num in self.stock_hist:
-                            print "\tngrams: {},\ttopic: k={}, {},\tstock: t={}"\
-                                .format(feature, topic_dist[0].shape[1], topic_dist[-1], stock_num),
-                            num_new = self.add_stock_change(stock_num=stock_num, run_cls=True, reset=True)
-                            sys.stdout.flush()
-                        # reset
-                        self.x_train = self.x_train[:, :-num_lda]
-                        self.x_test = self.x_test[:, :-num_lda]
-                """
-
     def run_tune_ngrams(self):
         results = []
         features = []
-
-        """
-        lda_features = None
-        if self.f_lda:
-            lda_features = load_lda(self.f_lda)
-        """
 
         for ngrams in Features:
             for use_tfidf in [False, True]:
@@ -225,38 +193,13 @@ class Baselines:
                     for stock_num in self.stock_hist:
                         new_feature = "{}\tstock: t={}".format(feature, stock_num)
                         print new_feature
-                        self.add_stock_change(stock_num=stock_num, run_cls=False, reset=True)
+                        stock_num = self.add_stock_change(stock_num=stock_num, run_cls=False, reset=False)
                         results.append(self.tune_LR(feature=new_feature))
                         features.append(new_feature)
-                        sys.stdout.flush()
-
-                """
-                # + topic
-                if lda_features:
-                    for topic_dist in lda_features:
-                        new_feature = "{}\ttopic: k={}, {}".format(feature, topic_dist[0].shape[1], topic_dist[-1])
-                        print new_feature
-                        num_new = self.add_lda(topic_dist=topic_dist, run_cls=False, reset=True)
-                        results.append(self.tune_LR(feature=new_feature))
-                        features.append(new_feature)
-                        sys.stdout.flush()
-
-                # + topic + stock change
-                if self.stock_hist and lda_features:
-                    for topic_dist in lda_features:
-                        num_lda = self.add_lda(topic_dist=topic_dist, run_cls=False, reset=False)
-                        for stock_num in self.stock_hist:
-                            new_feature = "{}\ttopic: k={}, {},\tstock: t={}"\
-                                .format(feature, topic_dist[0].shape[1], topic_dist[-1], stock_num)
-                            print new_feature
-                            num_new = self.add_stock_change(stock_num=stock_num, run_cls=False, reset=True)
-                            results.append(self.tune_LR(feature=new_feature))
-                            features.append(new_feature)
-                            sys.stdout.flush()
                         # reset
-                        self.x_train = self.x_train[:, :-num_lda]
-                        self.x_test = self.x_test[:, :-num_lda]
-                """
+                        self.x_train = self.x_train[:, :-stock_num]
+                        self.x_test = self.x_test[:, :-stock_num]
+                        sys.stdout.flush()
 
         print '============================================\nfinal results\n' \
               '============================================'
@@ -264,7 +207,6 @@ class Baselines:
             print features[idx],
             print "\t[Accuracy] train:", results[idx][1], "\ttest:", results[idx][0]
             self.cls_model = results[idx][2]
-            # self.get_top_features(N=50, feature=feature)
         sys.stdout.flush()
 
         print "============================================\nstatistical info:\n" \
@@ -418,7 +360,7 @@ class Baselines:
             stock_end = stock_start + stock_hist
             if self.stock_today:
                 stock_start = 0
-            if self.x_train is None:
+            if self.x_test is None:
                 self.x_train = self.data_reader.train.x_stock[:, stock_start:stock_end]
                 self.x_test = self.data_reader.test.x_stock[:, stock_start:stock_end]
                 if len(self.data_reader.valid.y) > 0:
@@ -590,31 +532,35 @@ if __name__ == "__main__":
     myModel.run_tune()
     '''
 
-    # Incremental number of features ###########################
-    """
-    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
-    f_dataset_docs = dir_data + "dataset/corpus_bp_stock_cls.npz"
+    #####################################
+    # ngrams (+ stock change)
+    #####################################
+    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
+    stock_hist = [1, 3, 5, 10, 20]
 
     data_reader = DataReader(dataset=f_dataset_docs)
 
-
-    vocab_top_k = [10, 100, 1000, 5000, 10000]
+    vocab_top_k = [10, 100, 1000, 5000, 10000] # feature selection
     for top_k in vocab_top_k:
         print 'performing classification for vocabulary size: {}'.format(top_k)
-        for stock_hist in [0, 10, 20]:
-            print "number of stock change hist: {}".format(stock_hist)
-            myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2,
-                                stock_today=False, stock_hist=stock_hist,
-                                verbose=0, use_chi_square=True, top_k=top_k)
-            myModel.run_tune()
-    """
+        myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2,
+                            stock_today=False, stock_hist=stock_hist,
+                            verbose=0, use_chi_square=True, top_k=top_k)
+        myModel.run_tune_ngrams()
+        #myModel.run_ngrams()
 
+    #####################################
+    # Pure LDA
+    #####################################
+    """
     dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
     f_lda = dir_data + "lda.npz"
     f_labels = dir_data + "labels.npz"
 
     myModel = Baselines(f_lda=f_lda, f_labels=f_labels, verbose=0)
     myModel.run_tune_lda()
+    """
 
 
 
