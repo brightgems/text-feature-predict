@@ -327,19 +327,22 @@ class DataProcessor:
         paths = os.listdir(dir_lda)
 
         def _set_feature(train, test, feature=""):
-            if self.use_shuffle:
+            if self.use_shuffle and len(self.sidx_train) > 0:
                 train = [train[idx] for idx in self.sidx_train]
                 test = [test[idx] for idx in self.sidx_test]
             lda_data.append([np.array(train), np.array(test), feature])
 
         for path_lda in paths:
-            print "loading from {}".format(path_lda)
             # for each k
-            self.load_lda(dir_lda + path_lda)
+            tmp = self.load_lda(dir_lda + path_lda)
+            if tmp == 0:
+                continue
             train_lda_today = [self.topic_dist[doc_idx] for doc_idx in self.train_idx]
             test_lda_today = [self.topic_dist[doc_idx] for doc_idx in self.test_idx]
 
+            print "generating historical features"
             for alpha in alphas:
+                print "\talpha={}".format(alpha)
                 for window_size in window_sizes:
                     self.gen_topic_hist(alpha=alpha, window_size=window_size)
 
@@ -360,9 +363,10 @@ class DataProcessor:
                     _set_feature(train_lda, test_lda, feature)
 
         # save
+        print "saving to file...",
         with open(f_lda_out, "wb") as f:
             pkl.dump(lda_data, f)
-        print "number of different topic features: {}".format(len(lda_data))
+        print "done! #different topic features: {}".format(len(lda_data))
 
     def reset_idx(self):
         self.train_idx = []  # doc idx for training
@@ -410,12 +414,12 @@ class DataProcessor:
                 self.train_idx.append(int(meta_line[2]))
                 self.train_stock.append(stock_hist)
                 self.train_labels.append(label)
-                self.train_lda_hist.append(lda_hist)
+                self.train_lda_hist_idx.append(lda_hist)
             elif train_label == 1:
                 self.test_idx.append(int(meta_line[2]))
                 self.test_stock.append(stock_hist)
                 self.test_labels.append(label)
-                self.test_lda_hist.append(lda_hist)
+                self.test_lda_hist_idx.append(lda_hist)
             else:
                 raise ValueError(
                     "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
@@ -427,7 +431,7 @@ class DataProcessor:
         load data from corpus and corpus mapping file
         :param f_corpus: corpus {company, date, docs}, tap separated
         """
-        print "loading from {}".format(f_corpus)
+        print "\tloading from {}".format(f_corpus)
         self.train.clear()
         self.test.clear()
 
@@ -461,10 +465,10 @@ class DataProcessor:
         except:
             print "[warning] illegal path ignored: {}".format(path_lda)
             return 0.
+        print "loading from {}".format(path_lda)
         for line in lines:
             if "alpha" in line:
                 alpha = float(line.strip().split()[-1])
-                print "alpha:", alpha,
                 break
 
         # get topic distribution
@@ -476,12 +480,13 @@ class DataProcessor:
             probs_sum = sum(probs)
             probs = [prob / probs_sum for prob in probs]
             self.topic_dist.append(np.array(probs))
+        return len(self.topic_dist)
 
     def gen_topic_hist(self, alpha=1., window_size=1):
         self.train_lda_hist = []
         self.test_lda_hist = []
 
-        for i, lda_hist in self.train_lda_hist_idx:
+        for i, lda_hist in enumerate(self.train_lda_hist_idx):
             hist = np.zeros(self.topic_dist[0].shape)
             for w in xrange(window_size):
                 doc_idx = lda_hist[w]
@@ -490,7 +495,7 @@ class DataProcessor:
                 alpha *= alpha
             self.train_lda_hist.append(hist)
 
-        for i, lda_hist in self.test_lda_hist_idx:
+        for i, lda_hist in enumerate(self.test_lda_hist_idx):
             hist = np.zeros(self.topic_dist[0].shape)
             for w in xrange(window_size):
                 doc_idx = lda_hist[w]
@@ -595,7 +600,7 @@ if __name__ == "__main__":
     window_sizes = [1, 3, 5, 10, 20]
 
     preprocessor = DataProcessor(overwrite=True, shuffle=True)
-    preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data,
-                          f_dataset_out=f_dataset_out, f_vocab=f_vocab)
+    preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out, f_vocab=f_vocab)
     preprocessor.run_lda(dir_lda=dir_lda, f_lda_out=f_lda_out,
-                         alphas=alphas, window_sizes=window_sizes)
+                         alphas=alphas, window_sizes=window_sizes,
+                         f_meta_data=f_meta_data)
