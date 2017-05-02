@@ -279,16 +279,30 @@ class DataProcessor:
         self.test = DataPoints()
         self.vocab = dict() # vocab for the loaded dataset
         self.vocab_size = vocab_size # take top vocab_size vocab for loaded dataset if not None
+
+        self.train_idx = []  # doc_idx for training
+        self.test_idx = []  # doc_idx for test
+        self.train_labels = []
+        self.test_labels = []
+        self.train_stock = [] # each element is a list of stock change (today, prev 20 days)
+        self.test_stock = []
+        self.train_lda_hist_idx = [] # each element is a list of doc_idx for topic history
+        self.test_lda_hist_idx = []
+        self.train_lda_hist = [] # each element is a historical topic dist (linear comb)
+        self.test_lda_hist = []
+
         self.overwrite = overwrite
         self.use_shuffle = shuffle
+
         self.sidx_train = [] # shuffled idx list for training set
         self.sidx_test = []
-        self.topic_dist = []
-        self.topic_hist = []
+
+        self.topic_dist = [] # a list of nparray
 
     def run_docs(self, f_corpus, f_meta_data, f_dataset_out, f_vocab=None):
         def _run():
-            self.load_data(f_corpus, f_meta_data, shuffle=True)
+            self.load_metadata(f_meta_data=f_meta_data)
+            self.load_corpus(f_corpus=f_corpus)
             self.gen_vocab(f_vocab=f_vocab)
             self.save_data(f_dataset_out=f_dataset_out)
 
@@ -301,67 +315,141 @@ class DataProcessor:
         except:
             _run()
 
-    def run_lda(self, dir_lda, f_meta_data, f_lda_out, alphas, window_sizes):
-        train_idx, test_idx, lda_hist_idx = self.load_metadata(f_meta_data)
+    def run_lda(self, dir_lda, f_lda_out, alphas, window_sizes, f_meta_data=None):
+        """
+        output format: a list of topic features
+        format: list of [train(ndarray, #sample * #feature), test (ndarray), description]
+        """
+        print "generating lda features ..."
+        if len(self.train_idx) == 0 and f_meta_data:
+            self.load_metadata(f_meta_data)
         lda_data = []
-
-        def _set_train(feature_lda, feature=""):
-            lda_train = [feature_lda[idx] for idx in train_idx]
-            lda_test = [feature_lda[idx] for idx in test_idx]
-
-            if self.use_shuffle:
-                lda_train = [lda_train[idx] for idx in self.sidx_train]
-                lda_test = [lda_test[idx] for idx in self.sidx_test]
-
-            lda_data.append([np.array(lda_train), np.array(lda_test), feature])
-
         paths = os.listdir(dir_lda)
+
+        def _set_feature(train, test, feature=""):
+            if self.use_shuffle:
+                train = [train[idx] for idx in self.sidx_train]
+                test = [test[idx] for idx in self.sidx_test]
+            lda_data.append([np.array(train), np.array(test), feature])
+
         for path_lda in paths:
+            print "loading from {}".format(path_lda)
             # for each k
             self.load_lda(dir_lda + path_lda)
+            train_lda_today = [self.topic_dist[doc_idx] for doc_idx in self.train_idx]
+            test_lda_today = [self.topic_dist[doc_idx] for doc_idx in self.test_idx]
 
             for alpha in alphas:
                 for window_size in window_sizes:
-                    topic_hist = self.gen_topic_hist(lda_hist_idx=lda_hist_idx, alpha=alpha, window_size=window_size)
+                    self.gen_topic_hist(alpha=alpha, window_size=window_size)
 
-                    # add
+                    # add together
                     feature = "alpha={}, L={}".format(alpha, window_size)
-                    feature_lda = [self.topic_dist[i] + topic_hist[i] for i in range(len(self.topic_dist))]
-                    _set_train(feature_lda, feature)
+                    train_lda = [train_lda_today[i] + self.train_lda_hist[i]
+                                 for i in range(len(train_lda_today))]
+                    test_lda = [test_lda_today[i] + self.test_lda_hist[i]
+                                for i in range(len(test_lda_today))]
+                    _set_feature(train_lda, test_lda, feature)
 
                     # concatenate
                     feature += " (cont)"
-                    feature_lda = [np.concatenate((self.topic_dist[i], topic_hist[i]))
-                                   for i in range(len(self.topic_dist))]
-                    _set_train(feature_lda, feature)
+                    train_lda = [np.concatenate((train_lda_today[i], self.train_lda_hist[i]))
+                                 for i in range(len(train_lda_today))]
+                    test_lda = [np.concatenate((test_lda_today[i], self.test_lda_hist[i]))
+                                 for i in range(len(test_lda_today))]
+                    _set_feature(train_lda, test_lda, feature)
 
+        # save
         with open(f_lda_out, "wb") as f:
             pkl.dump(lda_data, f)
         print "number of different topic features: {}".format(len(lda_data))
 
+    def reset_idx(self):
+        self.train_idx = []  # doc idx for training
+        self.test_idx = []  # doc idx for test
+        self.train_labels = []
+        self.test_labels = []
+        self.train_stock = []
+        self.test_stock = []
+        self.train_lda_hist_idx = []
+        self.test_lda_hist_idx = []
 
     def load_metadata(self, f_meta_data):
-        train_idx = []
-        test_idx = []
-        lda_hist_idx = []
+        """
+        :param f_meta_data: meta data, comma separated
+                            {company, date, doc_idx (line number of doc in corpus, starting 0),
+                            today's stock change, previous 20 days' stock changes,
+                            previous 20 day's doc_idx (-1 if non-exist)
+                            label, train(0)/test(1)}
+        """
+        print "Loading metadata...",
+        self.reset_idx()
 
         with open(f_meta_data, "r") as f:
             meta_data = f.readlines()
+
         for lidx, meta_line in enumerate(meta_data):
             meta_line = meta_line.strip().split(",")
-            if len(meta_line) == 46:
-                hist_idx = [int(s) for s in meta_line[-3:-23:-1]]
-                lda_hist_idx.append(hist_idx)
-            label = int(meta_line[-1])
-            if label == 0: # train
-                train_idx.append(int(meta_line[2]))
-            elif label == 1:
-                test_idx.append(int(meta_line[2]))
+            assert len(meta_line) == 46, \
+                "invalid meta data! line {}, length {}".format(lidx+1, len(meta_line))
+
+            # stock changes
+            stock_hist = [float(s) for s in meta_line[3:24]] # today, 20 previous days
+
+            # lda hist
+            lda_hist = [int(s) for s in meta_line[-3:-23:-1]] # 20 previous days
+
+            # stock label
+            label = int(meta_line[-2])
+            if label == 0:
+                label = -1
+
+            # train/test label
+            train_label = int(meta_line[-1])
+            if train_label == 0: # train
+                self.train_idx.append(int(meta_line[2]))
+                self.train_stock.append(stock_hist)
+                self.train_labels.append(label)
+                self.train_lda_hist.append(lda_hist)
+            elif train_label == 1:
+                self.test_idx.append(int(meta_line[2]))
+                self.test_stock.append(stock_hist)
+                self.test_labels.append(label)
+                self.test_lda_hist.append(lda_hist)
             else:
                 raise ValueError(
                     "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
 
-        return train_idx, test_idx, lda_hist_idx
+        print "done! {} records loaded!".format(len(meta_data))
+
+    def load_corpus(self, f_corpus):
+        """
+        load data from corpus and corpus mapping file
+        :param f_corpus: corpus {company, date, docs}, tap separated
+        """
+        print "loading from {}".format(f_corpus)
+        self.train.clear()
+        self.test.clear()
+
+        with open(f_corpus, "r") as f:
+            corpus = f.readlines()
+
+        # construct training set
+        for i, doc_idx in enumerate(self.train_idx):
+            doc = word_tokenize(corpus[int(doc_idx)].strip().split("\t")[-1]) # get doc from corpus
+            self.train.x_doc.append(doc)
+            self.train.x_stock.append(self.train_stock[i])
+            self.train.y.append(self.train_labels[i])
+
+        # construct test set
+        for i, doc_idx in enumerate(self.test_idx):
+            doc = word_tokenize(corpus[int(doc_idx)].strip().split("\t")[-1])
+            self.test.x_doc.append(doc)
+            self.test.x_stock.append(self.test_stock[i])
+            self.test.y.append(self.test_labels[i])
+
+        if self.use_shuffle:
+            self.shuffle()
 
     def load_lda(self, path_lda):
         self.topic_dist = []
@@ -389,17 +477,27 @@ class DataProcessor:
             probs = [prob / probs_sum for prob in probs]
             self.topic_dist.append(np.array(probs))
 
-    def gen_topic_hist(self, lda_hist_idx, alpha=1., window_size=1):
-        topic_hist = []
-        for tidx, topic_dist in enumerate(self.topic_dist):
-            hist = np.zeros(topic_dist.shape)
-            for widx in range(1, window_size+1):
-                hidx = lda_hist_idx[tidx][widx]
-                if hidx > 0:
-                    hist += alpha * self.topic_dist[hidx]
+    def gen_topic_hist(self, alpha=1., window_size=1):
+        self.train_lda_hist = []
+        self.test_lda_hist = []
+
+        for i, lda_hist in self.train_lda_hist_idx:
+            hist = np.zeros(self.topic_dist[0].shape)
+            for w in xrange(window_size):
+                doc_idx = lda_hist[w]
+                if doc_idx > 0: # not -1
+                    hist += alpha * self.topic_dist[doc_idx]
                 alpha *= alpha
-            topic_hist.append(hist)
-        return topic_hist
+            self.train_lda_hist.append(hist)
+
+        for i, lda_hist in self.test_lda_hist_idx:
+            hist = np.zeros(self.topic_dist[0].shape)
+            for w in xrange(window_size):
+                doc_idx = lda_hist[w]
+                if doc_idx > 0: # not -1
+                    hist += alpha * self.topic_dist[doc_idx]
+                alpha *= alpha
+            self.test_lda_hist.append(hist)
 
     def gen_vocab(self, f_vocab=None):
         """
@@ -434,66 +532,6 @@ class DataProcessor:
         # save vocab
         if f_vocab:
             pkl.dump(self.vocab, open(f_vocab, "wb"))
-
-    def load_data(self, f_corpus, f_meta_data):
-        """
-        load data from corpus and corpus mapping file
-        :param f_corpus: corpus {company, date, docs}, tap separated
-        :param f_meta_data: meta data, comma separated
-                            {company, date, line index in corpus (starting 0), label, train(0)/test(1)}
-        """
-        print "loading from {}".format(f_corpus)
-        self.train.clear()
-        self.test.clear()
-
-        with open(f_meta_data, "r") as f:
-            meta_data = f.readlines()
-        with open(f_corpus, "r") as f:
-            corpus = f.readlines()
-
-        for lidx, meta_line in enumerate(meta_data):
-            meta_line = meta_line.strip().split(",")
-            if len(meta_line) == 5:
-                doc = word_tokenize(corpus[int(meta_line[2])].strip().split("\t")[-1]) # get doc from corpus
-                label = int(meta_line[-2])
-                if label == 0:
-                    label = -1
-                if int(meta_line[-1]) == 0:
-                    self.train.x_doc.append(doc) # text
-                    self.train.y.append(label) # label
-                elif int(meta_line[-1]) == 1:
-                    self.test.x_doc.append(doc)
-                    self.test.y.append(label)
-                else:
-                    raise ValueError(
-                        "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
-
-            if len(meta_line) == 26:
-                doc = word_tokenize(corpus[int(meta_line[2])].strip().split("\t")[-1])  # get doc from corpus
-                label = int(meta_line[-2])
-                if label == 0:
-                    label = -1
-                stock = [float(s) for s in meta_line[3:-2]]
-                #fixme: NAN problem in stock change
-                if np.any(np.isnan(np.array(stock))):
-                    nan_idx = np.argwhere(np.isnan(np.array(stock)))
-                    for idx in nan_idx:
-                        stock[idx[0]] = 0.
-                assert len(stock) == 21, "invalid number of stock changes"
-                if int(meta_line[-1]) == 0:
-                    self.train.x_doc.append(doc)  # text
-                    self.train.x_stock.append(stock) # stock change, today and prev 20 days
-                    self.train.y.append(label)  # label
-                elif int(meta_line[-1]) == 1:
-                    self.test.x_doc.append(doc)
-                    self.test.x_stock.append(stock)
-                    self.test.y.append(label)
-                else:
-                    raise ValueError(
-                        "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
-
-        if self.use_shuffle:
-            self.shuffle()
 
     def shuffle(self):
         print "using shuffling...",
@@ -544,16 +582,20 @@ class DataProcessor:
 
 
 if __name__ == "__main__":
-    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
-    #dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
+    #dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/"
     f_corpus = dir_data + "standard-query-corpus_pp.tsv"
     f_meta_data = dir_data + "corpus_labels_split_balanced_change.csv"
     f_dataset_out = dir_data + "dataset/corpus_bp_stock_cls.npz"
     f_vocab = dir_data + "dataset/vocab_stock.npz"
 
-    dir_lda = dir_data + "lda_results/"
-    f_lda_out = dir_data + "dataset/lda_features.npz"
+    dir_lda = dir_data + "lda_result_20170411/"
+    f_lda_out = dir_data + "dataset/lda.npz"
+    alphas = [1., 0.9, 0.8, 0.7, 0.6]
+    window_sizes = [1, 3, 5, 10, 20]
 
     preprocessor = DataProcessor(overwrite=True, shuffle=True)
-    preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out, f_vocab=f_vocab)
-    preprocessor.run_lda(dir_lda=dir_lda, f_meta_data=f_meta_data, f_lda_out=f_lda_out)
+    preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data,
+                          f_dataset_out=f_dataset_out, f_vocab=f_vocab)
+    preprocessor.run_lda(dir_lda=dir_lda, f_lda_out=f_lda_out,
+                         alphas=alphas, window_sizes=window_sizes)
