@@ -133,8 +133,12 @@ class Baselines:
         self.use_chi_square = use_chi_square
         self.top_k = top_k
 
+        # set labels
         if data_reader is None and f_labels:
             self.set_ground_truth(f_labels)
+        else:
+            self.y_train = self.data_reader.train.y
+            self.y_test = self.data_reader.test.y
 
     def run_ngrams(self):
         #lda_features = None
