@@ -299,10 +299,12 @@ class DataProcessor:
 
         self.topic_dist = [] # a list of nparray
 
-    def run_docs(self, f_corpus, f_meta_data, f_dataset_out, f_vocab=None):
+    def run_docs(self, f_corpus, f_meta_data, f_dataset_out, f_vocab=None, f_sidx=None):
         def _run():
             self.load_metadata(f_meta_data=f_meta_data)
             self.load_corpus(f_corpus=f_corpus)
+            if self.use_shuffle:
+                self.shuffle(f_sidx=f_sidx)
             self.gen_vocab(f_vocab=f_vocab)
             self.save_data(f_dataset_out=f_dataset_out)
 
@@ -412,7 +414,9 @@ class DataProcessor:
                 "invalid meta data! line {}, length {}".format(lidx+1, len(meta_line))
 
             # stock changes
-            stock_hist = [float(s) for s in meta_line[3:24]] # today, 20 previous days
+            stock_hist = np.array([float(s) for s in meta_line[3:24]]) # today, 20 previous days
+            pos = np.argwhere(np.isnan(stock_hist))
+            stock_hist[pos] = 0.
 
             # lda hist
             lda_hist = [int(s) for s in meta_line[-3:-23:-1]] # 20 previous days
@@ -465,9 +469,6 @@ class DataProcessor:
             self.test.x_doc.append(doc)
             self.test.x_stock.append(self.test_stock[i])
             self.test.y.append(self.test_labels[i])
-
-        if self.use_shuffle:
-            self.shuffle()
 
     def load_lda(self, path_lda):
         self.topic_dist = []
@@ -554,15 +555,23 @@ class DataProcessor:
         if f_vocab:
             pkl.dump(self.vocab, open(f_vocab, "wb"))
 
-    def shuffle(self):
-        # print "using shuffling...",
+    def shuffle(self, f_sidx=None):
+        print "using shuffling ... ",
         self.sidx_train = np.random.permutation(len(self.train.y))
+        self.sidx_test = np.random.permutation(len(self.test.y))
+        if f_sidx:
+            print "use random index from file ... ",
+            with open(f_sidx, "rb") as f:
+                self.sidx_train = pkl.load(f)
+                self.sidx_test = pkl.load(f)
+
+        # train
         self.train.x_doc = [self.train.x_doc[idx] for idx in self.sidx_train]
         if len(self.train.x_stock) > 0:
             self.train.x_stock = [self.train.x_stock[idx] for idx in self.sidx_train]
         self.train.y = [self.train.y[idx] for idx in self.sidx_train]
 
-        self.sidx_test = np.random.permutation(len(self.test.y))
+        # test
         self.test.x_doc = [self.test.x_doc[idx] for idx in self.sidx_test]
         if len(self.test.x_stock) > 0:
             self.test.x_stock = [self.test.x_stock[idx] for idx in self.sidx_test]
@@ -629,15 +638,18 @@ if __name__ == "__main__":
 
     dir_lda = dir_data + "lda_result_20170411/"
     f_lda_out = dir_data + "dataset/lda.npz"
-    f_labels = dir_data + "dataset/labels.npz"
+    f_labels = dir_data + "dataset/labels2.npz"
     f_sidx = dir_data + "dataset/rand_idx.npz"
     alphas = [1., 0.9, 0.8, 0.7, 0.6]
     window_sizes = [1, 3, 5, 10, 20]
 
     preprocessor = DataProcessor(overwrite=True, shuffle=True)
-    preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out, f_vocab=f_vocab)
+    preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out,
+                          f_vocab=f_vocab, f_sidx=f_sidx)
     preprocessor.save_labels(f_labels_out=f_labels)
-    preprocessor.save_sidx(f_sidx_out=f_sidx)
+    preprocessor.save_sidx(f_sidx_out=f_sidx+"2")
+    """
     preprocessor.run_lda(dir_lda=dir_lda, f_lda_out=f_lda_out,
                          alphas=alphas, window_sizes=window_sizes,
                          f_meta_data=f_meta_data)
+    """
