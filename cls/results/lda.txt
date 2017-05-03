@@ -1,0 +1,675 @@
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=1.0, L=1 	[Accuracy] train: 0.534020176003 	test: 0.496750433276
+[Topic] k=45, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.549688774415 	test: 0.50259965338
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=1.0, L=3 	[Accuracy] train: 0.535415325177 	test: 0.493067590988
+[Topic] k=45, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.542391071045 	test: 0.511048526863
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=1.0, L=5 	[Accuracy] train: 0.532410388495 	test: 0.5
+[Topic] k=45, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.545396007727 	test: 0.506065857886
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=1.0, L=10 	[Accuracy] train: 0.536703155184 	test: 0.501733102253
+[Topic] k=45, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.54797166774 	test: 0.504982668977
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=1.0, L=20 	[Accuracy] train: 0.536381197682 	test: 0.498050259965
+[Topic] k=45, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.550010731917 	test: 0.513648180243
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.9, L=1 	[Accuracy] train: 0.534020176003 	test: 0.500433275563
+[Topic] k=45, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.549581455248 	test: 0.503899480069
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.9, L=3 	[Accuracy] train: 0.533912856836 	test: 0.498050259965
+[Topic] k=45, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.544644773557 	test: 0.50931542461
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.9, L=5 	[Accuracy] train: 0.531659154325 	test: 0.501733102253
+[Topic] k=45, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.543571581885 	test: 0.508232235702
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.9, L=10 	[Accuracy] train: 0.535629963511 	test: 0.503249566724
+[Topic] k=45, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.549581455248 	test: 0.500216637782
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.9, L=20 	[Accuracy] train: 0.54142519854 	test: 0.503466204506
+[Topic] k=45, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.551298561923 	test: 0.509965337955
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.8, L=1 	[Accuracy] train: 0.535415325177 	test: 0.500866551127
+[Topic] k=45, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.549474136081 	test: 0.504116117851
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.8, L=3 	[Accuracy] train: 0.532410388495 	test: 0.496533795494
+[Topic] k=45, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.542713028547 	test: 0.509965337955
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.8, L=5 	[Accuracy] train: 0.533912856836 	test: 0.495883882149
+[Topic] k=45, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.545503326894 	test: 0.507365684575
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.8, L=10 	[Accuracy] train: 0.53530800601 	test: 0.496750433276
+[Topic] k=45, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.550332689418 	test: 0.502816291161
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.8, L=20 	[Accuracy] train: 0.536381197682 	test: 0.501083188908
+[Topic] k=45, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.551942476926 	test: 0.510398613518
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.7, L=1 	[Accuracy] train: 0.535629963511 	test: 0.500433275563
+[Topic] k=45, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.54990341275 	test: 0.50259965338
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.7, L=3 	[Accuracy] train: 0.534449452672 	test: 0.495883882149
+[Topic] k=45, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.544322816055 	test: 0.509748700173
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.7, L=5 	[Accuracy] train: 0.530478643486 	test: 0.50129982669
+[Topic] k=45, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.545396007727 	test: 0.507149046794
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.7, L=10 	[Accuracy] train: 0.533483580167 	test: 0.497833622184
+[Topic] k=45, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.548293625241 	test: 0.506499133449
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.7, L=20 	[Accuracy] train: 0.535415325177 	test: 0.497833622184
+[Topic] k=45, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.549796093582 	test: 0.508665511265
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.6, L=1 	[Accuracy] train: 0.536273878515 	test: 0.500433275563
+[Topic] k=45, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.54990341275 	test: 0.50259965338
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.6, L=3 	[Accuracy] train: 0.534449452672 	test: 0.499133448873
+[Topic] k=45, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.547113114402 	test: 0.511481802426
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.6, L=5 	[Accuracy] train: 0.531015239322 	test: 0.497833622184
+[Topic] k=45, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.547542391071 	test: 0.509532062392
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.6, L=10 	[Accuracy] train: 0.531122558489 	test: 0.500433275563
+[Topic] k=45, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.548508263576 	test: 0.510398613518
+[Topic] k=45,  today 	[Accuracy] train: 0.533805537669 	test: 0.506065857886
+[Topic] k=45, alpha=0.6, L=20 	[Accuracy] train: 0.530478643486 	test: 0.500216637782
+[Topic] k=45, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.548293625241 	test: 0.5106152513
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=1.0, L=1 	[Accuracy] train: 0.519532088431 	test: 0.506065857886
+[Topic] k=15, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.527151749302 	test: 0.505632582322
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=1.0, L=3 	[Accuracy] train: 0.520390641769 	test: 0.494800693241
+[Topic] k=15, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.525971238463 	test: 0.503032928943
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=1.0, L=5 	[Accuracy] train: 0.51609787508 	test: 0.497616984402
+[Topic] k=15, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.521571152608 	test: 0.516247833622
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=1.0, L=10 	[Accuracy] train: 0.512449023396 	test: 0.499133448873
+[Topic] k=15, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.516419832582 	test: 0.504116117851
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=1.0, L=20 	[Accuracy] train: 0.525863919296 	test: 0.495233968804
+[Topic] k=15, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.527366387637 	test: 0.502383015598
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.9, L=1 	[Accuracy] train: 0.517385705087 	test: 0.505632582322
+[Topic] k=15, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.527581025971 	test: 0.505199306759
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.9, L=3 	[Accuracy] train: 0.517922300923 	test: 0.503682842288
+[Topic] k=15, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.526722472634 	test: 0.50259965338
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.9, L=5 	[Accuracy] train: 0.514702725907 	test: 0.495667244367
+[Topic] k=15, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.522537025113 	test: 0.510398613518
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.9, L=10 	[Accuracy] train: 0.51459540674 	test: 0.493500866551
+[Topic] k=15, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.519639407598 	test: 0.503899480069
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.9, L=20 	[Accuracy] train: 0.515132002576 	test: 0.491767764298
+[Topic] k=15, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.525863919296 	test: 0.503899480069
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.8, L=1 	[Accuracy] train: 0.517600343421 	test: 0.509748700173
+[Topic] k=15, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.527366387637 	test: 0.505199306759
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.8, L=3 	[Accuracy] train: 0.518566215926 	test: 0.497616984402
+[Topic] k=15, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.527795664306 	test: 0.509098786828
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.8, L=5 	[Accuracy] train: 0.516634470917 	test: 0.496533795494
+[Topic] k=15, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.525112685126 	test: 0.506282495667
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.8, L=10 	[Accuracy] train: 0.51609787508 	test: 0.494150779896
+[Topic] k=15, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.522966301781 	test: 0.500216637782
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.8, L=20 	[Accuracy] train: 0.51802962009 	test: 0.492201039861
+[Topic] k=15, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.522858982614 	test: 0.502816291161
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.7, L=1 	[Accuracy] train: 0.518351577592 	test: 0.509965337955
+[Topic] k=15, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.52725906847 	test: 0.504116117851
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.7, L=3 	[Accuracy] train: 0.516741790084 	test: 0.500433275563
+[Topic] k=15, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.525971238463 	test: 0.514298093588
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.7, L=5 	[Accuracy] train: 0.51802962009 	test: 0.493284228769
+[Topic] k=15, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.524361450955 	test: 0.506932409012
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.7, L=10 	[Accuracy] train: 0.521571152608 	test: 0.492850953206
+[Topic] k=15, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.524790727624 	test: 0.507149046794
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.7, L=20 	[Accuracy] train: 0.519746726765 	test: 0.493284228769
+[Topic] k=15, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.525220004293 	test: 0.505199306759
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.6, L=1 	[Accuracy] train: 0.519424769264 	test: 0.512781629116
+[Topic] k=15, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.52725906847 	test: 0.504766031196
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.6, L=3 	[Accuracy] train: 0.522751663447 	test: 0.500216637782
+[Topic] k=15, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.524146812621 	test: 0.514948006932
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.6, L=5 	[Accuracy] train: 0.52339557845 	test: 0.498483535529
+[Topic] k=15, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.521893110109 	test: 0.515164644714
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.6, L=10 	[Accuracy] train: 0.520390641769 	test: 0.498050259965
+[Topic] k=15, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.522537025113 	test: 0.515164644714
+[Topic] k=15,  today 	[Accuracy] train: 0.516741790084 	test: 0.511265164645
+[Topic] k=15, alpha=0.6, L=20 	[Accuracy] train: 0.520176003434 	test: 0.497616984402
+[Topic] k=15, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.522751663447 	test: 0.515381282496
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=1.0, L=1 	[Accuracy] train: 0.534234814338 	test: 0.500433275563
+[Topic] k=35, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.540566645203 	test: 0.504982668977
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=1.0, L=3 	[Accuracy] train: 0.532303069328 	test: 0.508232235702
+[Topic] k=35, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.543678901052 	test: 0.50931542461
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=1.0, L=5 	[Accuracy] train: 0.524898046791 	test: 0.510831889081
+[Topic] k=35, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.542713028547 	test: 0.512998266898
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=1.0, L=10 	[Accuracy] train: 0.531766473492 	test: 0.507582322357
+[Topic] k=35, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.542391071045 	test: 0.507582322357
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=1.0, L=20 	[Accuracy] train: 0.534986048508 	test: 0.494150779896
+[Topic] k=35, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.539815411032 	test: 0.504549393414
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.9, L=1 	[Accuracy] train: 0.534771410174 	test: 0.503899480069
+[Topic] k=35, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.540995921872 	test: 0.504982668977
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.9, L=3 	[Accuracy] train: 0.531981111827 	test: 0.508232235702
+[Topic] k=35, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.544752092724 	test: 0.510181975737
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.9, L=5 	[Accuracy] train: 0.528654217643 	test: 0.507149046794
+[Topic] k=35, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.544644773557 	test: 0.511048526863
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.9, L=10 	[Accuracy] train: 0.531122558489 	test: 0.507365684575
+[Topic] k=35, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.543142305216 	test: 0.516031195841
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.9, L=20 	[Accuracy] train: 0.533054303499 	test: 0.499133448873
+[Topic] k=35, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.542283751878 	test: 0.505632582322
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.8, L=1 	[Accuracy] train: 0.533268941833 	test: 0.50259965338
+[Topic] k=35, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.541532517708 	test: 0.505415944541
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.8, L=3 	[Accuracy] train: 0.530907920155 	test: 0.506715771231
+[Topic] k=35, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.541532517708 	test: 0.505199306759
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.8, L=5 	[Accuracy] train: 0.531766473492 	test: 0.511048526863
+[Topic] k=35, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.543464262717 	test: 0.511698440208
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.8, L=10 	[Accuracy] train: 0.527688345138 	test: 0.51191507799
+[Topic] k=35, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.542927666881 	test: 0.516681109185
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.8, L=20 	[Accuracy] train: 0.529405451814 	test: 0.510831889081
+[Topic] k=35, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.54260570938 	test: 0.51863084922
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.7, L=1 	[Accuracy] train: 0.533376261 	test: 0.505632582322
+[Topic] k=35, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.541103241039 	test: 0.504332755633
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.7, L=3 	[Accuracy] train: 0.530585962653 	test: 0.511265164645
+[Topic] k=35, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.542713028547 	test: 0.506499133449
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.7, L=5 	[Accuracy] train: 0.531122558489 	test: 0.507582322357
+[Topic] k=35, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.540781283537 	test: 0.507798960139
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.7, L=10 	[Accuracy] train: 0.532088430994 	test: 0.510831889081
+[Topic] k=35, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.544430135222 	test: 0.512781629116
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.7, L=20 	[Accuracy] train: 0.531122558489 	test: 0.512564991334
+[Topic] k=35, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.544644773557 	test: 0.512564991334
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.6, L=1 	[Accuracy] train: 0.533268941833 	test: 0.50259965338
+[Topic] k=35, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.541317879373 	test: 0.501733102253
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.6, L=3 	[Accuracy] train: 0.532839665164 	test: 0.506065857886
+[Topic] k=35, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.54260570938 	test: 0.503682842288
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.6, L=5 	[Accuracy] train: 0.531444515991 	test: 0.511481802426
+[Topic] k=35, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.541210560206 	test: 0.505632582322
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.6, L=10 	[Accuracy] train: 0.531873792659 	test: 0.512564991334
+[Topic] k=35, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.541210560206 	test: 0.505632582322
+[Topic] k=35,  today 	[Accuracy] train: 0.530907920155 	test: 0.508448873484
+[Topic] k=35, alpha=0.6, L=20 	[Accuracy] train: 0.531981111827 	test: 0.512781629116
+[Topic] k=35, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.541103241039 	test: 0.506932409012
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=1.0, L=1 	[Accuracy] train: 0.508692852543 	test: 0.509098786828
+[Topic] k=10, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.515668598412 	test: 0.521013864818
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=1.0, L=3 	[Accuracy] train: 0.509658725048 	test: 0.509098786828
+[Topic] k=10, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.521678471775 	test: 0.519280762565
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=1.0, L=5 	[Accuracy] train: 0.507512341704 	test: 0.517114384749
+[Topic] k=10, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.512341704228 	test: 0.517764298094
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=1.0, L=10 	[Accuracy] train: 0.506653788367 	test: 0.50129982669
+[Topic] k=10, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.50804893754 	test: 0.503032928943
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=1.0, L=20 	[Accuracy] train: 0.509014810045 	test: 0.484835355286
+[Topic] k=10, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.519424769264 	test: 0.512348353553
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.9, L=1 	[Accuracy] train: 0.506761107534 	test: 0.509965337955
+[Topic] k=10, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.516312513415 	test: 0.518197573657
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.9, L=3 	[Accuracy] train: 0.510409959219 	test: 0.508448873484
+[Topic] k=10, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.522107748444 	test: 0.518847487002
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.9, L=5 	[Accuracy] train: 0.505687915862 	test: 0.514948006932
+[Topic] k=10, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.515883236746 	test: 0.509532062392
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.9, L=10 	[Accuracy] train: 0.506653788367 	test: 0.504766031196
+[Topic] k=10, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.513092938399 	test: 0.51191507799
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.9, L=20 	[Accuracy] train: 0.50998068255 	test: 0.502816291161
+[Topic] k=10, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.516849109251 	test: 0.514081455806
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.8, L=1 	[Accuracy] train: 0.505473277527 	test: 0.511481802426
+[Topic] k=10, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.514166130071 	test: 0.517764298094
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.8, L=3 	[Accuracy] train: 0.510088001717 	test: 0.511048526863
+[Topic] k=10, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.522858982614 	test: 0.516681109185
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.8, L=5 	[Accuracy] train: 0.505580596695 	test: 0.514081455806
+[Topic] k=10, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.518780854261 	test: 0.5106152513
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.8, L=10 	[Accuracy] train: 0.506761107534 	test: 0.516464471404
+[Topic] k=10, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.518888173428 	test: 0.503249566724
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.8, L=20 	[Accuracy] train: 0.505902554196 	test: 0.510831889081
+[Topic] k=10, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.514702725907 	test: 0.504549393414
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.7, L=1 	[Accuracy] train: 0.505044000859 	test: 0.512564991334
+[Topic] k=10, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.512878300064 	test: 0.517764298094
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.7, L=3 	[Accuracy] train: 0.506868426701 	test: 0.508665511265
+[Topic] k=10, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.523610216785 	test: 0.515164644714
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.7, L=5 	[Accuracy] train: 0.50268297918 	test: 0.515381282496
+[Topic] k=10, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.521034556772 	test: 0.513214904679
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.7, L=10 	[Accuracy] train: 0.504078128354 	test: 0.511698440208
+[Topic] k=10, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.519317450097 	test: 0.508448873484
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.7, L=20 	[Accuracy] train: 0.503004936682 	test: 0.514298093588
+[Topic] k=10, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.52071259927 	test: 0.508232235702
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.6, L=1 	[Accuracy] train: 0.505473277527 	test: 0.515381282496
+[Topic] k=10, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.513200257566 	test: 0.517764298094
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.6, L=3 	[Accuracy] train: 0.505795235029 	test: 0.515597920277
+[Topic] k=10, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.523180940116 	test: 0.513864818024
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.6, L=5 	[Accuracy] train: 0.503434213351 	test: 0.513864818024
+[Topic] k=10, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.522322386778 	test: 0.512781629116
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.6, L=10 	[Accuracy] train: 0.502575660013 	test: 0.514948006932
+[Topic] k=10, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.522000429277 	test: 0.514514731369
+[Topic] k=10,  today 	[Accuracy] train: 0.509658725048 	test: 0.519064124783
+[Topic] k=10, alpha=0.6, L=20 	[Accuracy] train: 0.503326894183 	test: 0.513864818024
+[Topic] k=10, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.522537025113 	test: 0.514081455806
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=1.0, L=1 	[Accuracy] train: 0.523717535952 	test: 0.500866551127
+[Topic] k=25, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.536488516849 	test: 0.513864818024
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=1.0, L=3 	[Accuracy] train: 0.527044430135 	test: 0.49740034662
+[Topic] k=25, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.527366387637 	test: 0.508882149047
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=1.0, L=5 	[Accuracy] train: 0.520068684267 	test: 0.502383015598
+[Topic] k=25, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.534449452672 	test: 0.511481802426
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=1.0, L=10 	[Accuracy] train: 0.526185876798 	test: 0.499133448873
+[Topic] k=25, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.533912856836 	test: 0.503682842288
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=1.0, L=20 	[Accuracy] train: 0.528868855978 	test: 0.491334488735
+[Topic] k=25, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.533483580167 	test: 0.497616984402
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.9, L=1 	[Accuracy] train: 0.525434642627 	test: 0.501083188908
+[Topic] k=25, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.537347070187 	test: 0.512564991334
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.9, L=3 	[Accuracy] train: 0.524790727624 	test: 0.499783362218
+[Topic] k=25, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.53530800601 	test: 0.518847487002
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.9, L=5 	[Accuracy] train: 0.521785790942 	test: 0.504116117851
+[Topic] k=25, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.538098304357 	test: 0.515597920277
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.9, L=10 	[Accuracy] train: 0.52071259927 	test: 0.504766031196
+[Topic] k=25, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.532517707663 	test: 0.50931542461
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.9, L=20 	[Accuracy] train: 0.525005365958 	test: 0.497616984402
+[Topic] k=25, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.528868855978 	test: 0.503899480069
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.8, L=1 	[Accuracy] train: 0.52876153681 	test: 0.502383015598
+[Topic] k=25, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.53799098519 	test: 0.512348353553
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.8, L=3 	[Accuracy] train: 0.526185876798 	test: 0.503466204506
+[Topic] k=25, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.531229877656 	test: 0.522313691508
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.8, L=5 	[Accuracy] train: 0.522858982614 	test: 0.499566724437
+[Topic] k=25, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.533268941833 	test: 0.517980935875
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.8, L=10 	[Accuracy] train: 0.523180940116 	test: 0.49870017331
+[Topic] k=25, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.535844601846 	test: 0.509532062392
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.8, L=20 	[Accuracy] train: 0.523180940116 	test: 0.499133448873
+[Topic] k=25, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.535844601846 	test: 0.5106152513
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.7, L=1 	[Accuracy] train: 0.527688345138 	test: 0.504766031196
+[Topic] k=25, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.53874221936 	test: 0.508882149047
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.7, L=3 	[Accuracy] train: 0.524790727624 	test: 0.502816291161
+[Topic] k=25, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.534664091007 	test: 0.517547660312
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.7, L=5 	[Accuracy] train: 0.524361450955 	test: 0.500866551127
+[Topic] k=25, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.532732345997 	test: 0.518197573657
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.7, L=10 	[Accuracy] train: 0.52801030264 	test: 0.500866551127
+[Topic] k=25, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.533590899335 	test: 0.523613518198
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.7, L=20 	[Accuracy] train: 0.527688345138 	test: 0.501516464471
+[Topic] k=25, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.534234814338 	test: 0.520147313692
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.6, L=1 	[Accuracy] train: 0.529083494312 	test: 0.505849220104
+[Topic] k=25, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.538420261859 	test: 0.507798960139
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.6, L=3 	[Accuracy] train: 0.527795664306 	test: 0.495233968804
+[Topic] k=25, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.535629963511 	test: 0.515164644714
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.6, L=5 	[Accuracy] train: 0.525756600129 	test: 0.501733102253
+[Topic] k=25, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.536166559347 	test: 0.517114384749
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.6, L=10 	[Accuracy] train: 0.524039493454 	test: 0.498266897747
+[Topic] k=25, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.536703155184 	test: 0.516681109185
+[Topic] k=25,  today 	[Accuracy] train: 0.529083494312 	test: 0.508665511265
+[Topic] k=25, alpha=0.6, L=20 	[Accuracy] train: 0.523180940116 	test: 0.498266897747
+[Topic] k=25, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.536381197682 	test: 0.516464471404
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=1.0, L=1 	[Accuracy] train: 0.51191242756 	test: 0.508665511265
+[Topic] k=20, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.52801030264 	test: 0.503899480069
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=1.0, L=3 	[Accuracy] train: 0.517814981756 	test: 0.502383015598
+[Topic] k=20, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.521249195106 	test: 0.507582322357
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=1.0, L=5 	[Accuracy] train: 0.510624597553 	test: 0.500866551127
+[Topic] k=20, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.526185876798 	test: 0.520580589255
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=1.0, L=10 	[Accuracy] train: 0.509014810045 	test: 0.492634315425
+[Topic] k=20, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.52532732346 	test: 0.506499133449
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=1.0, L=20 	[Accuracy] train: 0.521034556772 	test: 0.488734835355
+[Topic] k=20, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.528976175145 	test: 0.504332755633
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.9, L=1 	[Accuracy] train: 0.511053874222 	test: 0.507365684575
+[Topic] k=20, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.527151749302 	test: 0.500866551127
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.9, L=3 	[Accuracy] train: 0.515453960077 	test: 0.502166377816
+[Topic] k=20, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.518351577592 	test: 0.507149046794
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.9, L=5 	[Accuracy] train: 0.51534664091 	test: 0.496317157712
+[Topic] k=20, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.518351577592 	test: 0.517114384749
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.9, L=10 	[Accuracy] train: 0.505580596695 	test: 0.495450606586
+[Topic] k=20, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.526829791801 	test: 0.50801559792
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.9, L=20 	[Accuracy] train: 0.51609787508 	test: 0.495017331023
+[Topic] k=20, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.527151749302 	test: 0.502383015598
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.8, L=1 	[Accuracy] train: 0.512449023396 	test: 0.506932409012
+[Topic] k=20, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.527902983473 	test: 0.503249566724
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.8, L=3 	[Accuracy] train: 0.515775917579 	test: 0.499783362218
+[Topic] k=20, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.523932174286 	test: 0.512781629116
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.8, L=5 	[Accuracy] train: 0.5134148959 	test: 0.501733102253
+[Topic] k=20, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.52071259927 	test: 0.515381282496
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.8, L=10 	[Accuracy] train: 0.515239321743 	test: 0.500216637782
+[Topic] k=20, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.527688345138 	test: 0.516464471404
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.8, L=20 	[Accuracy] train: 0.510302640052 	test: 0.498050259965
+[Topic] k=20, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.528117621807 	test: 0.514081455806
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.7, L=1 	[Accuracy] train: 0.516205194248 	test: 0.50259965338
+[Topic] k=20, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.527795664306 	test: 0.503899480069
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.7, L=3 	[Accuracy] train: 0.514058810904 	test: 0.501516464471
+[Topic] k=20, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.524254131788 	test: 0.512564991334
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.7, L=5 	[Accuracy] train: 0.514166130071 	test: 0.49870017331
+[Topic] k=20, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.521249195106 	test: 0.515597920277
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.7, L=10 	[Accuracy] train: 0.514810045074 	test: 0.503032928943
+[Topic] k=20, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.520068684267 	test: 0.519497400347
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.7, L=20 	[Accuracy] train: 0.515024683408 	test: 0.50259965338
+[Topic] k=20, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.52607855763 	test: 0.521663778163
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.6, L=1 	[Accuracy] train: 0.515561279244 	test: 0.504116117851
+[Topic] k=20, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.527473706804 	test: 0.502816291161
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.6, L=3 	[Accuracy] train: 0.516741790084 	test: 0.504116117851
+[Topic] k=20, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.528332260142 	test: 0.507365684575
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.6, L=5 	[Accuracy] train: 0.516312513415 	test: 0.501083188908
+[Topic] k=20, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.527044430135 	test: 0.514298093588
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.6, L=10 	[Accuracy] train: 0.51609787508 	test: 0.504116117851
+[Topic] k=20, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.527151749302 	test: 0.513214904679
+[Topic] k=20,  today 	[Accuracy] train: 0.514166130071 	test: 0.514731369151
+[Topic] k=20, alpha=0.6, L=20 	[Accuracy] train: 0.51609787508 	test: 0.503899480069
+[Topic] k=20, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.526507834299 	test: 0.513431542461
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=1.0, L=1 	[Accuracy] train: 0.53530800601 	test: 0.505199306759
+[Topic] k=50, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.543571581885 	test: 0.512998266898
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=1.0, L=3 	[Accuracy] train: 0.536595836016 	test: 0.495233968804
+[Topic] k=50, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.54335694355 	test: 0.51191507799
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=1.0, L=5 	[Accuracy] train: 0.534449452672 	test: 0.497616984402
+[Topic] k=50, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.541317879373 	test: 0.514948006932
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=1.0, L=10 	[Accuracy] train: 0.542927666881 	test: 0.495667244367
+[Topic] k=50, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.547005795235 	test: 0.50931542461
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=1.0, L=20 	[Accuracy] train: 0.539278815196 	test: 0.506282495667
+[Topic] k=50, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.54142519854 	test: 0.507149046794
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.9, L=1 	[Accuracy] train: 0.534878729341 	test: 0.504982668977
+[Topic] k=50, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.544859411891 	test: 0.517114384749
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.9, L=3 	[Accuracy] train: 0.535629963511 	test: 0.498050259965
+[Topic] k=50, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.544322816055 	test: 0.512781629116
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.9, L=5 	[Accuracy] train: 0.532732345997 	test: 0.498266897747
+[Topic] k=50, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.544966731058 	test: 0.512998266898
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.9, L=10 	[Accuracy] train: 0.542176432711 	test: 0.499566724437
+[Topic] k=50, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.54872290191 	test: 0.513864818024
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.9, L=20 	[Accuracy] train: 0.546683837733 	test: 0.491551126516
+[Topic] k=50, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.550547327753 	test: 0.51191507799
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.8, L=1 	[Accuracy] train: 0.533805537669 	test: 0.507798960139
+[Topic] k=50, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.544000858553 	test: 0.509098786828
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.8, L=3 	[Accuracy] train: 0.537132431852 	test: 0.495883882149
+[Topic] k=50, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.544859411891 	test: 0.514948006932
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.8, L=5 	[Accuracy] train: 0.537883666023 	test: 0.49740034662
+[Topic] k=50, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.542069113544 	test: 0.513431542461
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.8, L=10 	[Accuracy] train: 0.538420261859 	test: 0.5
+[Topic] k=50, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.549044859412 	test: 0.521013864818
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.8, L=20 	[Accuracy] train: 0.540030049367 	test: 0.502816291161
+[Topic] k=50, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.54990341275 	test: 0.518197573657
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.7, L=1 	[Accuracy] train: 0.534771410174 	test: 0.509532062392
+[Topic] k=50, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.544322816055 	test: 0.508665511265
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.7, L=3 	[Accuracy] train: 0.532946984331 	test: 0.503899480069
+[Topic] k=50, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.543571581885 	test: 0.513431542461
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.7, L=5 	[Accuracy] train: 0.535629963511 	test: 0.497616984402
+[Topic] k=50, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.546361880232 	test: 0.520363951473
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.7, L=10 	[Accuracy] train: 0.536917793518 	test: 0.497833622184
+[Topic] k=50, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.549796093582 	test: 0.521447140381
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.7, L=20 	[Accuracy] train: 0.536595836016 	test: 0.49740034662
+[Topic] k=50, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.547435071904 	test: 0.515381282496
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.6, L=1 	[Accuracy] train: 0.534449452672 	test: 0.511265164645
+[Topic] k=50, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.544430135222 	test: 0.508448873484
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.6, L=3 	[Accuracy] train: 0.532839665164 	test: 0.501949740035
+[Topic] k=50, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.544966731058 	test: 0.515814558059
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.6, L=5 	[Accuracy] train: 0.534986048508 	test: 0.496100519931
+[Topic] k=50, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.541961794376 	test: 0.519064124783
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.6, L=10 	[Accuracy] train: 0.537669027688 	test: 0.50129982669
+[Topic] k=50, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.545717965229 	test: 0.518847487002
+[Topic] k=50,  today 	[Accuracy] train: 0.52801030264 	test: 0.512348353553
+[Topic] k=50, alpha=0.6, L=20 	[Accuracy] train: 0.538205623524 	test: 0.500866551127
+[Topic] k=50, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.545503326894 	test: 0.519497400347
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=1.0, L=1 	[Accuracy] train: 0.531766473492 	test: 0.504766031196
+[Topic] k=30, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.54142519854 	test: 0.502383015598
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=1.0, L=3 	[Accuracy] train: 0.526937110968 	test: 0.504332755633
+[Topic] k=30, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.525541961794 	test: 0.516031195841
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=1.0, L=5 	[Accuracy] train: 0.524039493454 	test: 0.507365684575
+[Topic] k=30, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.534234814338 	test: 0.513648180243
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=1.0, L=10 	[Accuracy] train: 0.528117621807 	test: 0.510398613518
+[Topic] k=30, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.536595836016 	test: 0.516031195841
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=1.0, L=20 	[Accuracy] train: 0.527581025971 	test: 0.502166377816
+[Topic] k=30, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.531766473492 	test: 0.505632582322
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.9, L=1 	[Accuracy] train: 0.529834728483 	test: 0.504982668977
+[Topic] k=30, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.542283751878 	test: 0.503249566724
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.9, L=3 	[Accuracy] train: 0.52801030264 	test: 0.501083188908
+[Topic] k=30, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.536810474351 	test: 0.507798960139
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.9, L=5 	[Accuracy] train: 0.525971238463 	test: 0.504549393414
+[Topic] k=30, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.539708091865 	test: 0.509532062392
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.9, L=10 	[Accuracy] train: 0.523717535952 	test: 0.517980935875
+[Topic] k=30, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.53530800601 	test: 0.51863084922
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.9, L=20 	[Accuracy] train: 0.52607855763 	test: 0.508665511265
+[Topic] k=30, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.542176432711 	test: 0.511048526863
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.8, L=1 	[Accuracy] train: 0.534127495171 	test: 0.507149046794
+[Topic] k=30, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.541961794376 	test: 0.503249566724
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.8, L=3 	[Accuracy] train: 0.527366387637 	test: 0.5
+[Topic] k=30, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.538849538528 	test: 0.511265164645
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.8, L=5 	[Accuracy] train: 0.526400515132 	test: 0.507149046794
+[Topic] k=30, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.539171496029 	test: 0.506715771231
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.8, L=10 	[Accuracy] train: 0.526185876798 	test: 0.503249566724
+[Topic] k=30, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.540244687701 	test: 0.509098786828
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.8, L=20 	[Accuracy] train: 0.526507834299 	test: 0.511481802426
+[Topic] k=30, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.53723975102 	test: 0.507149046794
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.7, L=1 	[Accuracy] train: 0.532410388495 	test: 0.510181975737
+[Topic] k=30, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.541103241039 	test: 0.501733102253
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.7, L=3 	[Accuracy] train: 0.531981111827 	test: 0.510181975737
+[Topic] k=30, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.544322816055 	test: 0.509748700173
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.7, L=5 	[Accuracy] train: 0.533376261 	test: 0.50801559792
+[Topic] k=30, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.538312942692 	test: 0.504982668977
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.7, L=10 	[Accuracy] train: 0.532195750161 	test: 0.508448873484
+[Topic] k=30, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.538956857695 	test: 0.510181975737
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.7, L=20 	[Accuracy] train: 0.531337196823 	test: 0.508448873484
+[Topic] k=30, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.538956857695 	test: 0.509532062392
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.6, L=1 	[Accuracy] train: 0.532839665164 	test: 0.511481802426
+[Topic] k=30, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.541317879373 	test: 0.501733102253
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.6, L=3 	[Accuracy] train: 0.528439579309 	test: 0.507798960139
+[Topic] k=30, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.542391071045 	test: 0.509748700173
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.6, L=5 	[Accuracy] train: 0.533268941833 	test: 0.515164644714
+[Topic] k=30, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.537561708521 	test: 0.511481802426
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.6, L=10 	[Accuracy] train: 0.533161622666 	test: 0.516464471404
+[Topic] k=30, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.537025112685 	test: 0.510398613518
+[Topic] k=30,  today 	[Accuracy] train: 0.531873792659 	test: 0.513431542461
+[Topic] k=30, alpha=0.6, L=20 	[Accuracy] train: 0.533376261 	test: 0.513431542461
+[Topic] k=30, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.536703155184 	test: 0.50931542461
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=1.0, L=1 	[Accuracy] train: 0.533483580167 	test: 0.506499133449
+[Topic] k=40, alpha=1.0, L=1 (cond) 	[Accuracy] train: 0.545396007727 	test: 0.506715771231
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=1.0, L=3 	[Accuracy] train: 0.529834728483 	test: 0.504332755633
+[Topic] k=40, alpha=1.0, L=3 (cond) 	[Accuracy] train: 0.545825284396 	test: 0.50801559792
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=1.0, L=5 	[Accuracy] train: 0.530264005151 	test: 0.508232235702
+[Topic] k=40, alpha=1.0, L=5 (cond) 	[Accuracy] train: 0.53874221936 	test: 0.50801559792
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=1.0, L=10 	[Accuracy] train: 0.53723975102 	test: 0.500216637782
+[Topic] k=40, alpha=1.0, L=10 (cond) 	[Accuracy] train: 0.539815411032 	test: 0.501083188908
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=1.0, L=20 	[Accuracy] train: 0.532303069328 	test: 0.497616984402
+[Topic] k=40, alpha=1.0, L=20 (cond) 	[Accuracy] train: 0.541210560206 	test: 0.500433275563
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.9, L=1 	[Accuracy] train: 0.534664091007 	test: 0.509965337955
+[Topic] k=40, alpha=0.9, L=1 (cond) 	[Accuracy] train: 0.547005795235 	test: 0.50931542461
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.9, L=3 	[Accuracy] train: 0.530264005151 	test: 0.507365684575
+[Topic] k=40, alpha=0.9, L=3 (cond) 	[Accuracy] train: 0.544966731058 	test: 0.507582322357
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.9, L=5 	[Accuracy] train: 0.531122558489 	test: 0.509748700173
+[Topic] k=40, alpha=0.9, L=5 (cond) 	[Accuracy] train: 0.541103241039 	test: 0.508665511265
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.9, L=10 	[Accuracy] train: 0.534127495171 	test: 0.508882149047
+[Topic] k=40, alpha=0.9, L=10 (cond) 	[Accuracy] train: 0.54142519854 	test: 0.503899480069
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.9, L=20 	[Accuracy] train: 0.536917793518 	test: 0.503899480069
+[Topic] k=40, alpha=0.9, L=20 (cond) 	[Accuracy] train: 0.544430135222 	test: 0.499566724437
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.8, L=1 	[Accuracy] train: 0.535629963511 	test: 0.511265164645
+[Topic] k=40, alpha=0.8, L=1 (cond) 	[Accuracy] train: 0.544859411891 	test: 0.506715771231
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.8, L=3 	[Accuracy] train: 0.534127495171 	test: 0.505632582322
+[Topic] k=40, alpha=0.8, L=3 (cond) 	[Accuracy] train: 0.543571581885 	test: 0.512131715771
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.8, L=5 	[Accuracy] train: 0.529620090148 	test: 0.503466204506
+[Topic] k=40, alpha=0.8, L=5 (cond) 	[Accuracy] train: 0.540566645203 	test: 0.506065857886
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.8, L=10 	[Accuracy] train: 0.531337196823 	test: 0.502383015598
+[Topic] k=40, alpha=0.8, L=10 (cond) 	[Accuracy] train: 0.54528868856 	test: 0.503249566724
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.8, L=20 	[Accuracy] train: 0.533805537669 	test: 0.501949740035
+[Topic] k=40, alpha=0.8, L=20 (cond) 	[Accuracy] train: 0.546683837733 	test: 0.502816291161
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.7, L=1 	[Accuracy] train: 0.534020176003 	test: 0.504116117851
+[Topic] k=40, alpha=0.7, L=1 (cond) 	[Accuracy] train: 0.545396007727 	test: 0.510398613518
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.7, L=3 	[Accuracy] train: 0.536166559347 	test: 0.507365684575
+[Topic] k=40, alpha=0.7, L=3 (cond) 	[Accuracy] train: 0.54335694355 	test: 0.507798960139
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.7, L=5 	[Accuracy] train: 0.533376261 	test: 0.501083188908
+[Topic] k=40, alpha=0.7, L=5 (cond) 	[Accuracy] train: 0.541961794376 	test: 0.50259965338
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.7, L=10 	[Accuracy] train: 0.532303069328 	test: 0.504549393414
+[Topic] k=40, alpha=0.7, L=10 (cond) 	[Accuracy] train: 0.545610646061 	test: 0.506499133449
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.7, L=20 	[Accuracy] train: 0.533698218502 	test: 0.505199306759
+[Topic] k=40, alpha=0.7, L=20 (cond) 	[Accuracy] train: 0.545503326894 	test: 0.507582322357
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.6, L=1 	[Accuracy] train: 0.536381197682 	test: 0.5106152513
+[Topic] k=40, alpha=0.6, L=1 (cond) 	[Accuracy] train: 0.544000858553 	test: 0.510181975737
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.6, L=3 	[Accuracy] train: 0.534664091007 	test: 0.505199306759
+[Topic] k=40, alpha=0.6, L=3 (cond) 	[Accuracy] train: 0.542069113544 	test: 0.509965337955
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.6, L=5 	[Accuracy] train: 0.534449452672 	test: 0.5
+[Topic] k=40, alpha=0.6, L=5 (cond) 	[Accuracy] train: 0.543142305216 	test: 0.507149046794
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.6, L=10 	[Accuracy] train: 0.534449452672 	test: 0.506065857886
+[Topic] k=40, alpha=0.6, L=10 (cond) 	[Accuracy] train: 0.543142305216 	test: 0.504982668977
+[Topic] k=40,  today 	[Accuracy] train: 0.52725906847 	test: 0.507582322357
+[Topic] k=40, alpha=0.6, L=20 	[Accuracy] train: 0.534020176003 	test: 0.505415944541
+[Topic] k=40, alpha=0.6, L=20 (cond) 	[Accuracy] train: 0.543142305216 	test: 0.505415944541
