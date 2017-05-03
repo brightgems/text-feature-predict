@@ -287,6 +287,108 @@ class Baselines:
         print '============================================'
         sys.stdout.flush()
 
+    def run_tune_add_all(self):
+        results = []
+        features = []
+
+        # load lda file
+        lda_all = None
+        print "loading lda features ... ",
+        try:
+            lda_all = load_lda(self.f_lda)
+        except:
+            print "[ERROR] loading lda feature failed!"
+            exit(0)
+        print "done!"
+
+        def _reset_features(num):
+            self.x_train = self.x_train[:, :-num]
+            self.x_test = self.x_test[:, :-num]
+
+        def _plus_stock(feature):
+            # + stock change
+            for stock_num in self.stock_hist:
+                new_feature = feature + "{}\tstock: t={}".format(feature, stock_num)
+                stock_num = self.add_stock_change(stock_num=stock_num, run_cls=False, reset=False)
+                results.append(self.tune_LR(feature=new_feature))
+                features.append(new_feature)
+                _reset_features(num=stock_num) # reset
+                sys.stdout.flush()
+
+        for ngrams in Features:
+            for use_tfidf in [False, True]:
+                # for sys_out
+                feature = "ngrams: {}".format(ngrams)
+                if use_tfidf:
+                    feature += "-TFIDF"
+
+                # get ngram features
+                self.get_ngrams(ngrams=ngrams, use_tfidf=use_tfidf, run_cls=False)
+
+                # + lda
+                for lda_k in lda_all:
+                    train_lda_today = lda_k[0][0]
+                    test_lda_today = lda_k[0][1]
+                    train_num, k = train_lda_today.shape
+                    test_num = test_lda_today.shape[0]
+                    feature += "[topic] k={}, ".format(k)
+
+                    # for each hist combination
+                    for i, lda_k_hist in enumerate(lda_k):
+                        if i == 0:
+                            continue
+
+                        # only topic
+                        new_feature = feature + " today"
+                        topic_num = self.add_lda(topic_dist=[train_lda_today, test_lda_today, feature], run_cls=False, reset=False)
+                        results.append(self.tune_LR(feature=feature + " today"))
+                        features.append(new_feature)
+                        if self.stock_hist:
+                            _plus_stock(new_feature)
+                        _reset_features(num=topic_num) # reset
+
+                        # add
+                        new_feature = feature + lda_k_hist[2]
+                        train_lda = np.array([train_lda_today[i] + lda_k_hist[0][i] for i in range(train_num)])
+                        test_lda = np.array([test_lda_today[i] + lda_k_hist[1][i] for i in range(test_num)])
+                        topic_num = self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=False, reset=False)
+                        results.append(self.tune_LR(feature=new_feature))
+                        features.append(new_feature)
+                        if self.stock_hist:
+                            _plus_stock(new_feature)
+                        _reset_features(num=topic_num) # reset
+
+                        # concatenate
+                        new_feature += " (cond)"
+                        train_lda = np.array(
+                            [np.concatenate((train_lda_today[i], lda_k_hist[0][i])) for i in range(train_num)])
+                        test_lda = np.array(
+                            [np.concatenate((test_lda_today[i], lda_k_hist[1][i])) for i in range(test_num)])
+                        topic_num = self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=False, reset=False)
+                        results.append(self.tune_LR(feature=new_feature))
+                        features.append(new_feature)
+                        if self.stock_hist:
+                            _plus_stock(new_feature)
+                        _reset_features(num=topic_num)  # reset
+
+        print '============================================\nfinal results\n' \
+              '============================================'
+        for idx in range(len(results)):
+            print features[idx],
+            print "\t[Accuracy] train:", results[idx][1], "\ttest:", results[idx][0]
+            self.cls_model = results[idx][2]
+        sys.stdout.flush()
+
+        print "============================================\nstatistical info:\n" \
+              '============================================'
+        print "\tvocab size:", len(self.vocab)
+        if self.vocab_ngrams:
+            print "\tn-grams (n=2)", len(self.vocab_ngrams)
+
+        print "\nvocabulary:", textwrap.fill(str(self.vocab), width=100)
+        print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100), "\n"
+
+
     def get_ngrams(self, ngrams, use_tfidf, run_cls=True, reset=False):
         """
         :param ngrams: "BOW" or "ngrams"
@@ -537,6 +639,7 @@ if __name__ == "__main__":
     #####################################
     dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
     f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
+    f_lda = dir_data + "lda.npz"
     stock_hist = [1, 3, 5, 10, 20]
 
     data_reader = DataReader(dataset=f_dataset_docs)
@@ -545,10 +648,11 @@ if __name__ == "__main__":
     for top_k in vocab_top_k:
         print 'performing classification for vocabulary size: {}'.format(top_k)
         myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2,
+                            f_lda=f_lda,
                             stock_today=False, stock_hist=stock_hist,
                             verbose=0, use_chi_square=True, top_k=top_k)
         myModel.run_tune_ngrams()
-        #myModel.run_ngrams()
+        #myModel.run_tune_add_all()
 
     #####################################
     # Pure LDA
