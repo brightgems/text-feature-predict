@@ -448,7 +448,7 @@ class Baselines:
         """
         # add topic distributions
         print "\ttopic: {}".format(topic_dist[-1]),
-        if self.x_train is None or len(self.x_train) == 0:
+        if self.x_train is None:
             self.x_train = topic_dist[0]
             self.x_test = topic_dist[1]
         else:
@@ -637,7 +637,8 @@ if __name__ == "__main__":
     #####################################
     # ngrams (+ stock change)
     #####################################
-    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/dataset/"
     f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
     f_lda = dir_data + "lda.npz"
     stock_hist = [1, 2, 3, 4, 5, 8, 10]
