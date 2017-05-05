@@ -241,6 +241,75 @@ class Baselines:
         print "\nvocabulary:", textwrap.fill(str(self.vocab), width=100)
         print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100), "\n"
 
+    def run_lda_topic_change_history(self):
+        """
+        topic change and topic history combined
+        """
+        results = []
+        features = []
+
+        lda_all = None
+        print "loading lda features...",
+        if self.f_lda:
+            lda_all = load_lda(self.f_lda)
+        print "done!"
+
+        def _clear_features():
+            self.x_train = None
+            self.x_test = None
+
+        # for each k
+        print "starting tuning"
+        for lda_k in lda_all:
+            train_lda_today = lda_k[0][0]
+            test_lda_today = lda_k[0][1]
+            train_num, k = train_lda_today.shape
+            test_num = test_lda_today.shape[0]
+            feature = "k={}, ".format(k)
+            print feature
+
+            train_lda_change = lda_k[1][0]
+            test_lda_change = lda_k[1][1]
+
+            for i, lda_k_hist in enumerate(lda_k):
+                if i == 0 or i == 1:
+                    continue
+
+                # topic change + history.add
+                new_feature = feature + " change " + lda_k_hist[2]
+                train_lda = np.array(
+                    [np.concatenate((train_lda_change[i], (train_lda_today[i] + lda_k_hist[0][i]))) for i in range(train_num)])
+                test_lda = np.array(
+                    [np.concatenate((test_lda_change[i], (test_lda_today[i] + lda_k_hist[1][i]))) for i in range(test_num)])
+                self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=False, reset=False)
+                results.append(self.tune_LR(feature=new_feature))
+                features.append(new_feature)
+                _clear_features()
+
+
+                # topic change + history.cont
+                new_feature += " (cond)"
+                train_lda = np.array(
+                    [np.concatenate((train_lda_change[i], train_lda_today[i], lda_k_hist[0][i])) for i in range(train_num)])
+                test_lda = np.array(
+                    [np.concatenate((test_lda_change[i], test_lda_today[i], lda_k_hist[1][i])) for i in range(test_num)])
+                self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=False, reset=False)
+                results.append(self.tune_LR(feature=new_feature))
+                features.append(new_feature)
+                _clear_features()
+
+                sys.stdout.flush()
+
+        # final output
+        print '============================================\nfinal results\n' \
+              '============================================'
+        for idx in range(len(results)):
+            print "[Topic]", features[idx],
+            print "\t[Accuracy] train:", results[idx][1], "\ttest:", results[idx][0]
+            self.cls_model = results[idx][2]
+        print '============================================'
+        sys.stdout.flush()
+
     def run_tune_lda(self):
         """
         only topic features
@@ -279,6 +348,15 @@ class Baselines:
                 results.append(self.tune_LR(feature=feature+" today"))
                 features.append(feature+" today")
                 _clear_features()
+
+                # # only hist
+                # new_feature = feature + lda_k_hist[2] + " only"
+                # train_lda = np.array([lda_k_hist[0][i] for i in range(train_num)])
+                # test_lda = np.array([lda_k_hist[1][i] for i in range(test_num)])
+                # self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=False, reset=False)
+                # results.append(self.tune_LR(feature=new_feature))
+                # features.append(new_feature)
+                # _clear_features()
 
                 # add
                 new_feature = feature + lda_k_hist[2]
@@ -681,8 +759,9 @@ if __name__ == "__main__":
         myModel.run_tune_add_all()
     '''
     #####################################
-    # Pure LDA
+    # LDA + history
     #####################################
+    '''
     # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
     dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_20170505/dataset/"
     f_lda = dir_data + "lda.npz"
@@ -690,7 +769,17 @@ if __name__ == "__main__":
 
     myModel = Baselines(f_lda=f_lda, f_labels=f_labels, verbose=0)
     myModel.run_tune_lda()
+    '''
+    #####################################
+    # LDA + change + history
+    #####################################
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_20170505/dataset/"
+    f_lda = dir_data + "lda_change_hist.npz"
+    f_labels = dir_data + "labels.npz"
 
+    myModel = Baselines(f_lda=f_lda, f_labels=f_labels, verbose=0)
+    myModel.run_lda_topic_change_history()
 
     #####################################
     # ngrams (+ stock change)

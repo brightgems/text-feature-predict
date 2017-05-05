@@ -354,7 +354,7 @@ class DataProcessor:
             print "generating topic change features"
             self.gen_topic_change()
             feature = "change"
-            #_set_feature(self.train_lda_change, self.test_lda_change, feature_lda, feature)
+            # _set_feature(self.train_lda_change, self.test_lda_change, feature_lda, feature)
 
             train_lda = [train_lda_today[i] - self.train_lda_change[i]
                          for i in range(len(train_lda_today))]
@@ -362,7 +362,6 @@ class DataProcessor:
                         for i in range(len(test_lda_today))]
             _set_feature(train_lda, test_lda, feature_lda, feature)
 
-            '''
             print "generating historical features"
             for alpha in alphas:
                 print "\talpha={}".format(alpha)
@@ -388,7 +387,7 @@ class DataProcessor:
                                  for i in range(len(test_lda_today))]
                     _set_feature(train_lda, test_lda, feature)
                     """
-            '''
+
             feature_lda_all.append(feature_lda)
 
 
@@ -677,14 +676,14 @@ if __name__ == "__main__":
     f_vocab = dir_data + "dataset/vocab_stock.npz"
 
     dir_lda = dir_data + "lda_result_20170411/"
-    f_lda_out = dir_data + "dataset/lda.npz"
-    f_labels = dir_data + "dataset/labels2.npz"
+    f_lda_out = dir_data + "dataset/lda_change_hist.npz"
+    f_labels = dir_data + "dataset/labels.npz"
     f_sidx = dir_data + "dataset/rand_idx.npz"
     alphas = [1., 0.9, 0.8, 0.7, 0.6]
     window_sizes = [1, 3, 5, 10, 20]
 
 
-    preprocessor = DataProcessor(overwrite=False, shuffle=True)
+    preprocessor = DataProcessor(overwrite=True, shuffle=True)
     preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out,
                           f_vocab=f_vocab, f_sidx=f_sidx)
     preprocessor.save_labels(f_labels_out=f_labels)

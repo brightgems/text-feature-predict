@@ -65,6 +65,40 @@ def lda_today(f_results):
         print k, '&', '%0.2f' % (content[k] * 100), '&', '&', '&', '&', '&', '&', '\\\\'
 
 
+def lda_change_history_add(f_results):
+    content = dict()
+
+    for line in open(f_results):
+        if 'cond' not in line:
+            k = int(re.findall(r'k=..', line)[0].replace('k=', ''))
+            acc_test = float(re.findall(r'test: .*$', line)[0].replace('test: ', ''))
+            if k not in content:
+                content[k] = []
+            content[k].append(acc_test)
+
+    ks = content.keys()
+    ks.sort()
+    for k in ks:
+        print k, '&', '%0.2f' % (max(content[k]) * 100)
+
+
+def lda_change_history_cont(f_results):
+    content = dict()
+
+    for line in open(f_results):
+        if 'cond' in line:
+            k = int(re.findall(r'k=..', line)[0].replace('k=', ''))
+            acc_test = float(re.findall(r'test: .*$', line)[0].replace('test: ', ''))
+            if k not in content:
+                content[k] = []
+            content[k].append(acc_test)
+
+    ks = content.keys()
+    ks.sort()
+    for k in ks:
+        print k, '&', '%0.2f' % (max(content[k]) * 100)
+
+
 def hist_cont_add(f_results):
     content_add = dict()
     content_cont = dict()
@@ -118,6 +152,13 @@ if __name__ == '__main__':
     # print '\nhist.cont:'
     # lda_hist_cont(results_lda)
 
-    results_stock_history = 'results/stock_history.txt'
+    # results_stock_history = 'results/stock_history.txt'
+    #
+    # stock_history(results_stock_history)
 
-    stock_history(results_stock_history)
+    results_lda_change_history = 'results/lda_change_history.txt'
+    print 'history add + change'
+    lda_change_history_add(results_lda_change_history)
+
+    print '\nhistory cont + change'
+    lda_change_history_cont(results_lda_change_history)
