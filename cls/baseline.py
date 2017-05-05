@@ -448,7 +448,7 @@ class Baselines:
         """
         # add topic distributions
         print "\ttopic: {}".format(topic_dist[-1]),
-        if self.x_train is None or len(self.x_train) == 0:
+        if self.x_train is None:
             self.x_train = topic_dist[0]
             self.x_test = topic_dist[1]
         else:
@@ -637,22 +637,23 @@ if __name__ == "__main__":
     #####################################
     # ngrams (+ stock change)
     #####################################
-    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/dataset/"
     f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
     f_lda = dir_data + "lda.npz"
-    stock_hist = [1, 3, 5, 10, 20]
+    stock_hist = [1, 2, 3, 4, 5, 8, 10]
 
     data_reader = DataReader(dataset=f_dataset_docs)
 
-    vocab_top_k = [10, 100, 1000, 5000, 10000] # feature selection
+    vocab_top_k = [10, 20, 30, 40, 50, 80, 100] # feature selection
     for top_k in vocab_top_k:
         print 'performing classification for vocabulary size: {}'.format(top_k)
         myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2,
                             f_lda=f_lda,
                             stock_today=False, stock_hist=stock_hist,
                             verbose=0, use_chi_square=True, top_k=top_k)
-        myModel.run_tune_ngrams()
-        #myModel.run_tune_add_all()
+        #myModel.run_tune_ngrams()
+        myModel.run_tune_add_all()
 
     #####################################
     # Pure LDA
