@@ -683,14 +683,14 @@ if __name__ == "__main__":
     #####################################
     # Pure LDA
     #####################################
-    """
-    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_20170505/dataset/"
     f_lda = dir_data + "lda.npz"
     f_labels = dir_data + "labels.npz"
 
     myModel = Baselines(f_lda=f_lda, f_labels=f_labels, verbose=0)
     myModel.run_tune_lda()
-    """
+
 
     #####################################
     # ngrams (+ stock change)
@@ -724,8 +724,9 @@ if __name__ == "__main__":
         myModel.run_tune_ngrams()
     '''
     #####################################
-    # topic history
+    # stock history
     #####################################
+    '''
     dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_features_201705/"
     f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
     stock_hist_max = 20
@@ -735,3 +736,4 @@ if __name__ == "__main__":
 
     myModel = Baselines(data_reader=data_reader, stock_hist=stock_hist)
     myModel.run_stock_change()
+    '''

@@ -288,8 +288,12 @@ class DataProcessor:
         self.test_stock = []
         self.train_lda_hist_idx = [] # each element is a list of doc_idx for topic history
         self.test_lda_hist_idx = []
+        self.train_lda_change_idx = [] # each element is a list of doc_idx for topic change
+        self.test_lda_change_idx = []
         self.train_lda_hist = [] # each element is a historical topic dist (linear comb)
         self.test_lda_hist = []
+        self.train_lda_change = [] # each element is a topic change
+        self.test_lda_change = []
 
         self.overwrite = overwrite
         self.use_shuffle = shuffle
@@ -347,6 +351,18 @@ class DataProcessor:
             test_lda_today = [self.topic_dist[doc_idx] for doc_idx in self.test_idx]
             _set_feature(train_lda_today, test_lda_today, feature_lda, feature="")
 
+            print "generating topic change features"
+            self.gen_topic_change()
+            feature = "change"
+            #_set_feature(self.train_lda_change, self.test_lda_change, feature_lda, feature)
+
+            train_lda = [train_lda_today[i] - self.train_lda_change[i]
+                         for i in range(len(train_lda_today))]
+            test_lda = [test_lda_today[i] - self.test_lda_change[i]
+                        for i in range(len(test_lda_today))]
+            _set_feature(train_lda, test_lda, feature_lda, feature)
+
+            '''
             print "generating historical features"
             for alpha in alphas:
                 print "\talpha={}".format(alpha)
@@ -372,7 +388,7 @@ class DataProcessor:
                                  for i in range(len(test_lda_today))]
                     _set_feature(train_lda, test_lda, feature)
                     """
-
+            '''
             feature_lda_all.append(feature_lda)
 
 
@@ -421,6 +437,9 @@ class DataProcessor:
             # lda hist
             lda_hist = [int(s) for s in meta_line[-3:-23:-1]] # 20 previous days
 
+            # topic change
+            lda_change = [int(meta_line[-22])]  # yesterday only
+
             # stock label
             label = int(meta_line[-2])
             if label == 0:
@@ -433,11 +452,13 @@ class DataProcessor:
                 self.train_stock.append(stock_hist)
                 self.train_labels.append(label)
                 self.train_lda_hist_idx.append(lda_hist)
+                self.train_lda_change_idx.append(lda_change)
             elif train_label == 1:
                 self.test_idx.append(int(meta_line[2]))
                 self.test_stock.append(stock_hist)
                 self.test_labels.append(label)
                 self.test_lda_hist_idx.append(lda_hist)
+                self.test_lda_change_idx.append(lda_change)
             else:
                 raise ValueError(
                     "warning: fail to recognize train/test label {0} at line {1}".format(meta_line[1], lidx))
@@ -496,6 +517,24 @@ class DataProcessor:
             probs = [prob / probs_sum for prob in probs]
             self.topic_dist.append(np.array(probs))
         return len(self.topic_dist)
+
+    def gen_topic_change(self):
+        self.train_lda_change = []
+        self.test_lda_change = []
+
+        for i, lda_change in enumerate(self.train_lda_change_idx):
+            doc_idx = lda_change[0]
+            change = np.zeros(self.topic_dist[0].shape)
+            if doc_idx > 0:
+                change = self.topic_dist[lda_change[0]]
+            self.train_lda_change.append(change)
+
+        for i, lda_change in enumerate(self.test_lda_change_idx):
+            doc_idx = lda_change[0]
+            change = np.zeros(self.topic_dist[0].shape)
+            if doc_idx > 0:
+                change = self.topic_dist[lda_change[0]]
+            self.test_lda_change.append(change)
 
     def gen_topic_hist(self, alpha=1., window_size=1):
         self.train_lda_hist = []
@@ -629,8 +668,9 @@ class DataProcessor:
 
 
 if __name__ == "__main__":
-    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
     #dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_20170505/"
     f_corpus = dir_data + "standard-query-corpus_pp.tsv"
     f_meta_data = dir_data + "corpus_labels_split_balanced_change.csv"
     f_dataset_out = dir_data + "dataset/corpus_bp_stock_cls.npz"
@@ -643,13 +683,13 @@ if __name__ == "__main__":
     alphas = [1., 0.9, 0.8, 0.7, 0.6]
     window_sizes = [1, 3, 5, 10, 20]
 
-    preprocessor = DataProcessor(overwrite=True, shuffle=True)
+
+    preprocessor = DataProcessor(overwrite=False, shuffle=True)
     preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out,
                           f_vocab=f_vocab, f_sidx=f_sidx)
     preprocessor.save_labels(f_labels_out=f_labels)
     preprocessor.save_sidx(f_sidx_out=f_sidx+"2")
-    """
+
     preprocessor.run_lda(dir_lda=dir_lda, f_lda_out=f_lda_out,
                          alphas=alphas, window_sizes=window_sizes,
                          f_meta_data=f_meta_data)
-    """
