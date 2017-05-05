@@ -108,7 +108,7 @@ class Baselines:
     def __init__(self, data_reader=None, f_labels=None, vocab=None, vocab_ngrams=None,
                  vocab_size=100000, ngram_order=3, ngram_num=100000,
                  stock_today=False, stock_hist=None, f_lda=None,
-                 verbose=0, use_chi_square=None, top_k=10000000):
+                 verbose=0, use_chi_square=False, top_k=10000000):
         self.data_reader = data_reader
         self.vocab = vocab
         self.vocab_ngrams = vocab_ngrams
@@ -164,6 +164,29 @@ class Baselines:
                         print "\tngrams: {},\tstock: t={}".format(feature, stock_num),
                         self.add_stock_change(stock_num=stock_num, run_cls=True, reset=True)
                         sys.stdout.flush()
+
+    def run_stock_change(self):
+        results = []
+        features = []
+
+        for stock_num in self.stock_hist:
+            new_feature = "stock: t={}".format(stock_num)
+            print new_feature
+            stock_num = self.add_stock_change(stock_num=stock_num, run_cls=False, reset=False)
+            results.append(self.tune_LR(feature=new_feature))
+            features.append(new_feature)
+            # reset
+            self.x_train = None
+            self.x_test = None
+            sys.stdout.flush()
+
+        print '============================================\nfinal results\n' \
+              '============================================'
+        for idx in range(len(results)):
+            print features[idx],
+            print "\t[Accuracy] train:", results[idx][1], "\ttest:", results[idx][0]
+            self.cls_model = results[idx][2]
+        sys.stdout.flush()
 
     def run_tune_ngrams(self):
         results = []
@@ -636,9 +659,11 @@ if __name__ == "__main__":
 
     #####################################
     # ngrams (+ stock change)
+    # chi-square feature selection
     #####################################
+    '''
     # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
-    dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/dataset/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_features_201705/"
     f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
     f_lda = dir_data + "lda.npz"
     stock_hist = [1, 2, 3, 4, 5, 8, 10]
@@ -654,7 +679,7 @@ if __name__ == "__main__":
                             verbose=0, use_chi_square=True, top_k=top_k)
         #myModel.run_tune_ngrams()
         myModel.run_tune_add_all()
-
+    '''
     #####################################
     # Pure LDA
     #####################################
@@ -667,5 +692,46 @@ if __name__ == "__main__":
     myModel.run_tune_lda()
     """
 
+    #####################################
+    # ngrams (+ stock change)
+    # mutual information feature selection
+    ####################################
+    '''
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_features_201705/"
+    f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
+    f_lda = dir_data + "lda.npz"
+    stock_hist = [1, 3, 5, 10, 20]
+    unigram_mi_scores = dir_data + "mi-unigram-scores.csv"
+    bigram_mi_scores = dir_data + "mi-bigram-scores.csv"
 
 
+    data_reader = DataReader(dataset=f_dataset_docs)
+
+    vocab_top_k = [30, 40, 80]  # feature selection
+    for top_k in vocab_top_k:
+        print 'performing classification for vocabulary size: {}'.format(top_k)
+        with open(unigram_mi_scores) as scores:
+            vocab = [score.strip().split(',')[0] for score in scores.readlines()[:top_k]]
+
+        with open(bigram_mi_scores) as scores:
+            vocab_ngrams = [score.strip().split(',')[0] for score in scores.readlines()[:top_k]]
+
+        myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2,
+                            f_lda=f_lda,
+                            stock_today=False, stock_hist=stock_hist,
+                            verbose=0, vocab=vocab, vocab_ngrams=vocab_ngrams)
+        myModel.run_tune_ngrams()
+    '''
+    #####################################
+    # topic history
+    #####################################
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_features_201705/"
+    f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
+    stock_hist_max = 20
+    stock_hist = range(1, stock_hist_max +1)
+
+    data_reader = DataReader(dataset=f_dataset_docs)
+
+    myModel = Baselines(data_reader=data_reader, stock_hist=stock_hist)
+    myModel.run_stock_change()

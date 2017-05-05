@@ -96,16 +96,28 @@ def get_k_alpha_l_acc(line):
     return k, alpha, l, acc_test
 
 
+def stock_history(f_results):
+    accs = []
+    for i, line in enumerate(open(f_results).readlines()):
+        accs.append(float(re.findall(r'test: .*$', line)[0].replace('test: ', '')))
+
+    for i, acc in enumerate(accs):
+        print i+1, '&', '%0.2f' % (acc * 100), '\\\\'
+
 if __name__ == '__main__':
-    results = 'results/lda.txt'
-    print 'lda today:'
-    lda_today(results)
+    # results_lda = 'results/lda.txt'
+    # print 'lda today:'
+    # lda_today(results_lda)
+    #
+    # print '\nks for hist.add, hist.cont:'
+    # hist_cont_add(results_lda)
+    #
+    # print '\nhist.add:'
+    # lda_hist_add(results_lda)
+    #
+    # print '\nhist.cont:'
+    # lda_hist_cont(results_lda)
 
-    print '\nks for hist.add, hist.cont:'
-    hist_cont_add(results)
+    results_stock_history = 'results/stock_history.txt'
 
-    print '\nhist.add:'
-    lda_hist_add(results)
-
-    print '\nhist.cont:'
-    lda_hist_cont(results)
+    stock_history(results_stock_history)
