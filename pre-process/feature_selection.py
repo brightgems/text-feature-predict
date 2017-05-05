@@ -1,24 +1,37 @@
 import cPickle as pkl
+import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_selection import  SelectKBest, chi2
+from sklearn.feature_selection import  SelectKBest, chi2, mutual_info_classif
 
 class DataPoints:
     def __init__(self):
-        self.x = []
+        self.x_doc = []
+        self.x_stock = []
+        self.x_lda = []
         self.y = []
 
     def set(self, data):
-        self.x = data[0]
-        self.y = data[1]
+        self.x_doc = data[0]
+        self.y = data[-1]
+        if len(data) == 3:
+            self.set_stock(data[1])
 
-    def set_x(self, x):
-        self.x = x
+    def set_doc(self, x_doc):
+        self.x_doc = x_doc
+
+    def set_lda(self, x_lda):
+        self.x_lda = np.array(x_lda)
+
+    def set_stock(self, x_stock):
+        self.x_stock = np.array(x_stock)
 
     def set_y(self, y):
         self.y = y
 
     def clear(self):
-        self.x = []
+        self.x_doc = []
+        self.x_stock = []
+        self.x_lda = []
         self.y = []
 
 class DataReader:
@@ -40,12 +53,12 @@ class DataReader:
             self.train.set(pkl.load(f))
             self.test.set(pkl.load(f))
             self.valid.set(pkl.load(f))
-        print "done! train:", len(self.train.x),\
-              "valid:", len(self.valid.x), "test:", len(self.test.x)
+        print "done! train:", len(self.train.y),\
+              "valid:", len(self.valid.y), "test:", len(self.test.y)
 
 
-def get_ngram_chi_scores(data_reader, scores_out, max_order, topK=None):
-    print "calculating chi-square scores for {}-grams".format(max_order)
+def get_ngram_scores(data_reader, scores_out, max_order, feature_selection_method, topK="all"):
+    print "calculating {} scores for {}-grams...".format(feature_selection_method.func_name, max_order)
 
     vocab = None
     vocab_size = None
@@ -54,29 +67,31 @@ def get_ngram_chi_scores(data_reader, scores_out, max_order, topK=None):
     count_vectorizer= CountVectorizer(vocabulary=vocab,
                                       max_features=vocab_size,
                                       ngram_range=(1, max_order))
-    x_train = count_vectorizer.fit_transform(data_reader.train.x)
+    x_train = count_vectorizer.fit_transform(data_reader.train.x_doc)
     vocab = count_vectorizer.vocabulary_
-    ch2 = SelectKBest(chi2, "all")
-    ch2_train = ch2.fit_transform(x_train, data_reader.train.y)
+    fs = SelectKBest(feature_selection_method, topK)
+    fs_train = fs.fit_transform(x_train, data_reader.train.y)
     feature_names = count_vectorizer.get_feature_names()
-    for i, score in enumerate(ch2.scores_):
+    for i, score in enumerate(fs.scores_):
         scores.append((score, feature_names[i]))
 
     scores.sort(reverse=True)
 
     with open(scores_out, 'w') as out:
-        if topK is None:
-            [out.write('{},{}\n'.format(score[1], score[0])) for score in scores]
-        else:
-            [out.write('{},{}\n'.format(score[1], score[0])) for score in scores[:topK]]
+        [out.write('{},{}\n'.format(score[1], score[0])) for score in scores]
 
 
 if __name__ == '__main__':
     dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
-    f_dataset_docs = dir_data + "dataset/corpus_bp_cls.npz"
-    unigram_scores_out = dir_data + "chi-unigram-scores.csv"
-    bigram_scores_out = dir_data + "chi-bigram-scores.csv"
+    f_dataset_docs = dir_data + "lda_features_201705/corpus_bp_stock_cls.npz"
+    unigram_chi_scores_out = dir_data + "lda_features_201705/chi-unigram-scores.csv"
+    unigram_mi_scores_out = dir_data + "lda_features_201705/mi-unigram-scores.csv"
+    bigram_chi_scores_out = dir_data + "lda_features_201705/chi-bigram-scores.csv"
+    bigram_mi_scores_out = dir_data + "lda_features_201705/mi-bigram-scores.csv"
+
 
     data_reader = DataReader(dataset=f_dataset_docs)
-    get_ngram_chi_scores(data_reader, unigram_scores_out, 1)
-    get_ngram_chi_scores(data_reader, bigram_scores_out, 2, topK=57216)
+    get_ngram_scores(data_reader, unigram_chi_scores_out, 1, feature_selection_method=chi2)
+    get_ngram_scores(data_reader, unigram_mi_scores_out, 1, feature_selection_method=mutual_info_classif)
+    get_ngram_scores(data_reader, bigram_chi_scores_out, 2, feature_selection_method=chi2, topK=57216)
+    get_ngram_scores(data_reader, bigram_mi_scores_out, 2, feature_selection_method=mutual_info_classif, topK=57216)
