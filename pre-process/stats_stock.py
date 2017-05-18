@@ -65,7 +65,9 @@ def get_labels(x, sig_pctg=1):
     else:
         print 'ERROR: Cant generate label for abs({}) < {}'.format(x, sig_pctg)
 
-def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1, num_previous_changes=0):
+
+def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1, num_previous_changes=0,
+               use_stock_prices=False):
     corpus_sig = dict()
 
     l_out = open(labels_out, 'w')
@@ -101,6 +103,10 @@ def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1,
         for i in range(num_previous_changes):
             i += 1
             df['Change_per_{}'.format(i)] = df['Change_per'].shift(-i)
+            df['Change_per_{}_Date'.format(i)] = df['Date'].shift(-i)
+
+        for i in range(num_previous_changes):
+            df['Open_hist_{}'.format(i)] = df['Open'].shift(-i)
 
         # print df[20:30]
 
@@ -110,11 +116,23 @@ def sig_statis(stock_dir, corpus_coverage, map_sym_comp, labels_out, sig_pctg=1,
             if row["Date"] in doc_dates.keys() and row["sig?"] == 1:
                 cnt_sig += 1
                 label = get_labels(row["Change_per"], sig_pctg=1)
-                l_out.write("{},{},{},{}".format(
-                    company, row["Date"], doc_dates[row["Date"]], row["Change_per"]))
-                for i in range(num_previous_changes):
-                    i += 1
-                    l_out.write(",{}".format(row['Change_per_{}'.format(i)]))
+                if use_stock_prices:
+                    l_out.write("{},{},{},{}".format(
+                        company, row["Date"], doc_dates[row["Date"]], row["Open_1"]))
+                    for i in range(num_previous_changes):
+                        l_out.write(",{}".format(row['Open_hist_{}'.format(i)]))
+                else:
+                    l_out.write("{},{},{},{}".format(
+                        company, row["Date"], doc_dates[row["Date"]], row["Change_per"]))
+                    for i in range(num_previous_changes):
+                        i += 1
+                        l_out.write(",{}".format(row['Change_per_{}'.format(i)]))
+                    for i in range(num_previous_changes):
+                        i += 1
+                        date = row['Change_per_{}_Date'.format(i)]
+                        date = doc_dates[date] if date in doc_dates else -1
+                        l_out.write(",{}".format(date))
+
                 l_out.write(",{}\n".format(label))
         corpus_sig[company] = cnt_sig
         print company, cnt_sig

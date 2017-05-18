@@ -91,7 +91,7 @@ def balance_dataset_binary(dataset):
 if __name__ == '__main__':
     data_path = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
     f_labels = data_path + "corpus_labels.csv"
-    f_split = data_path + "corpus_labels_split.csv"
+    f_split_out = data_path + "corpus_labels_split.csv"
     split_date = date(2012, 6, 7)
 
-    separate_train_test_validation(split_date, 0.0, f_labels, f_split, balance=True)
+    separate_train_test_validation(split_date, 0.0, f_labels, f_split_out, balance=True)

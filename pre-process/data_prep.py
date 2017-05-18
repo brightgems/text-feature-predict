@@ -669,9 +669,11 @@ class DataProcessor:
 if __name__ == "__main__":
     # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
     #dir_data = "/Users/Irene/Documents/financial_topic_model/data/bp/"
-    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_20170505/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
     f_corpus = dir_data + "standard-query-corpus_pp.tsv"
+    # f_meta_data = dir_data + "corpus_labels_stock_price_split.csv"
     f_meta_data = dir_data + "corpus_labels_split_balanced_change.csv"
+    # f_dataset_out = dir_data + "dataset/corpus_bp_stock_price_cls.npz"
     f_dataset_out = dir_data + "dataset/corpus_bp_stock_cls.npz"
     f_vocab = dir_data + "dataset/vocab_stock.npz"
 
