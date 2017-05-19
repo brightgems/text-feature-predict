@@ -65,6 +65,24 @@ def lda_today(f_results):
         print k, '&', '%0.2f' % (content[k] * 100), '&', '&', '&', '&', '&', '&', '\\\\'
 
 
+def lda_change(f_results):
+    content_dist = dict()
+    content_change = dict()
+
+    for line in open(f_results):
+        k = int(re.findall(r'k=..', line)[0].replace('k=', ''))
+        acc_test = float(re.findall(r'test: .*$', line)[0].replace('test: ', ''))
+        if 'topic distribution' in line:
+            content_dist[k] = acc_test
+        elif 'change only' in line:
+            content_change[k] = acc_test
+
+    ks = content_change.keys()
+    ks.sort()
+    print 'change only & change + topic dist'
+    for k in ks:
+        print k, '%0.2f' % (content_change[k] * 100), '&', '%0.2f' % (content_dist[k] * 100)
+
 def lda_change_history_add(f_results):
     content = dict()
 
@@ -139,7 +157,7 @@ def stock_history(f_results):
         print i+1, '&', '%0.2f' % (acc * 100), '\\\\'
 
 if __name__ == '__main__':
-    # results_lda = 'results/lda.txt'
+    # results_lda = 'results/lda_insignificant.txt'
     # print 'lda today:'
     # lda_today(results_lda)
     #
@@ -156,9 +174,12 @@ if __name__ == '__main__':
     #
     # stock_history(results_stock_history)
 
-    results_lda_change_history = 'results/lda_change_history.txt'
-    print 'history add + change'
-    lda_change_history_add(results_lda_change_history)
+    # results_lda_change_history = 'results/lda_change_history_insignificant.txt'
+    # print 'history add + change'
+    # lda_change_history_add(results_lda_change_history)
+    #
+    # print '\nhistory cont + change'
+    # lda_change_history_cont(results_lda_change_history)
 
-    print '\nhistory cont + change'
-    lda_change_history_cont(results_lda_change_history)
+    results_lda_change = 'results/lda_change_insignificant.txt'
+    lda_change(results_lda_change)

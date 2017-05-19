@@ -672,9 +672,9 @@ if __name__ == "__main__":
     dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/"
     f_corpus = dir_data + "standard-query-corpus_pp.tsv"
     # f_meta_data = dir_data + "corpus_labels_stock_price_split.csv"
-    f_meta_data = dir_data + "corpus_labels_split_balanced_change.csv"
+    f_meta_data = dir_data + "corpus_labels_insignificant_split.csv"
     # f_dataset_out = dir_data + "dataset/corpus_bp_stock_price_cls.npz"
-    f_dataset_out = dir_data + "dataset/corpus_bp_stock_cls.npz"
+    f_dataset_out = dir_data + "dataset/corpus_bp_stock_insignificant_cls.npz"
     f_vocab = dir_data + "dataset/vocab_stock.npz"
 
     dir_lda = dir_data + "lda_result_20170411/"
@@ -687,9 +687,9 @@ if __name__ == "__main__":
 
     preprocessor = DataProcessor(overwrite=True, shuffle=True)
     preprocessor.run_docs(f_corpus=f_corpus, f_meta_data=f_meta_data, f_dataset_out=f_dataset_out,
-                          f_vocab=f_vocab, f_sidx=f_sidx)
+                          f_vocab=f_vocab)
     preprocessor.save_labels(f_labels_out=f_labels)
-    preprocessor.save_sidx(f_sidx_out=f_sidx+"2")
+    preprocessor.save_sidx(f_sidx_out=f_sidx)
 
     preprocessor.run_lda(dir_lda=dir_lda, f_lda_out=f_lda_out,
                          alphas=alphas, window_sizes=window_sizes,
