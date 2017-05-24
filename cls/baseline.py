@@ -188,6 +188,12 @@ class Baselines:
             self.cls_model = results[idx][2]
         sys.stdout.flush()
 
+    def run_stock_change_stat_sig(self):
+        print "stock t=1"
+        stock_num = self.add_stock_change(stock_num=1, run_cls=True, reset=True)
+        sys.stdout.flush()
+
+
     def run_tune_ngrams(self):
         results = []
         features = []
@@ -240,6 +246,9 @@ class Baselines:
 
         print "\nvocabulary:", textwrap.fill(str(self.vocab), width=100)
         print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100), "\n"
+
+    def run_ngrams_stat_sig(self):
+        self.get_ngrams(ngrams='ngrams', use_tfidf=True, run_cls=True, C=1, solver='newton-cg')
 
     def run_lda_topic_change(self):
         """
@@ -303,7 +312,7 @@ class Baselines:
         print '============================================'
         sys.stdout.flush()
 
-    def run_lda_topic_change_history(self):
+    def run_lda_topic_change_history(self, stat_sig=False):
         """
         topic change and topic history combined
         """
@@ -323,6 +332,7 @@ class Baselines:
         # for each k
         print "starting tuning"
         for lda_k in lda_all:
+
             train_lda_today = lda_k[0][0]
             test_lda_today = lda_k[0][1]
             train_num, k = train_lda_today.shape
@@ -330,12 +340,20 @@ class Baselines:
             feature = "k={}, ".format(k)
             print feature
 
+            if stat_sig:
+                if int(k) != 10:
+                    continue
+
             train_lda_change = lda_k[1][0]
             test_lda_change = lda_k[1][1]
 
             for i, lda_k_hist in enumerate(lda_k):
                 if i == 0 or i == 1:
                     continue
+
+                if stat_sig:
+                    if lda_k_hist[2] != "alpha=0.7, L=20":
+                        continue
 
                 # topic change + history.add
                 new_feature = feature + " change " + lda_k_hist[2]
@@ -355,10 +373,14 @@ class Baselines:
                     [np.concatenate((train_lda_change[i], train_lda_today[i], lda_k_hist[0][i])) for i in range(train_num)])
                 test_lda = np.array(
                     [np.concatenate((test_lda_change[i], test_lda_today[i], lda_k_hist[1][i])) for i in range(test_num)])
-                self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=False, reset=False)
-                results.append(self.tune_LR(feature=new_feature))
-                features.append(new_feature)
-                _clear_features()
+                if stat_sig:
+                    self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=True, reset=False, C=0.001,
+                                 solver='newton-cg')
+                else:
+                    self.add_lda(topic_dist=[train_lda, test_lda, new_feature], run_cls=False, reset=False)
+                    results.append(self.tune_LR(feature=new_feature))
+                    features.append(new_feature)
+                    _clear_features()
 
                 sys.stdout.flush()
 
@@ -552,14 +574,14 @@ class Baselines:
         print "\nvocab-ngrams:", textwrap.fill(str(self.vocab_ngrams), width=100), "\n"
 
 
-    def get_ngrams(self, ngrams, use_tfidf, run_cls=True, reset=False):
+    def get_ngrams(self, ngrams, use_tfidf, run_cls=True, reset=False, C=1, solver='lbfgs'):
         """
         :param ngrams: "BOW" or "ngrams"
         :param use_tfidf: whether to use TFIDF
         """
         eval("self.feature_" + ngrams)(use_tfidf=use_tfidf)
         if run_cls:
-            self.cls_LR()
+            self.cls_LR(C=C, solver=solver)
         if reset:
             self.x_train = None
             self.x_test = None
@@ -570,7 +592,7 @@ class Baselines:
             self.y_train = pkl.load(f)
             self.y_test = pkl.load(f)
 
-    def add_lda(self, topic_dist, run_cls=True, reset=True):
+    def add_lda(self, topic_dist, run_cls=True, reset=True, C=1, solver='lbfgs'):
         """
         :param topic_dist: content from lda feature file (list), [train, test, description]
         :param run_cls: whether to run classifer with current features
@@ -580,7 +602,7 @@ class Baselines:
         topic_num = topic_dist[-1]
         self.feature_lda(topic_dist) # add features
         if run_cls:
-            self.cls_LR()
+            self.cls_LR(C=C, solver=solver)
         if reset:
             self.x_train = self.x_train[:, :-topic_num]
             self.x_test = self.x_test[:, :-topic_num]
@@ -694,16 +716,17 @@ class Baselines:
             if len(self.data_reader.valid.y) > 0:
                 self.x_valid = tfidf_transformer.fit_transform(self.x_valid)
 
-    def cls_LR(self):
-        self.cls_model = LogisticRegression(C=1, solver='lbfgs',
-                                            max_iter=500,
-                                            verbose=self.verbose)
+    def cls_LR(self, C=1, solver='lbfgs', max_iter=500):
+        self.cls_model = LogisticRegression(C=C, solver=solver, max_iter=max_iter, verbose=self.verbose)
         print '\t[feature num] {}'.format(self.x_train.shape[1]),
         self.cls_model.fit(self.x_train, self.y_train)
         self.predicted = self.cls_model.predict(self.x_test)
         accu_train = self.cls_model.score(self.x_train, self.y_train)
         accu = accuracy_score(self.y_test, self.predicted)
         print "\t[Accuracy] train:", accu_train, "\ttest:", accu
+        print "true labels:", self.y_test
+        print "predictions:", list(self.predicted)
+
 
     def tune_LR(self, feature=None):
         cv_model = GridSearchCV(LogisticRegression(penalty='l2', max_iter=500),
@@ -835,7 +858,7 @@ if __name__ == "__main__":
     #####################################
     # LDA + change
     #####################################
-
+    '''
     # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
     dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/dataset/"
     f_lda = dir_data + "lda_change_hist.npz"
@@ -843,7 +866,7 @@ if __name__ == "__main__":
 
     myModel = Baselines(f_lda=f_lda, f_labels=f_labels, verbose=0)
     myModel.run_lda_topic_change()
-
+    '''
     #####################################
     # LDA + change + history
     #####################################
@@ -901,3 +924,58 @@ if __name__ == "__main__":
     myModel = Baselines(data_reader=data_reader, stock_hist=stock_hist)
     myModel.run_stock_change()
     '''
+    #####################################
+    # stock history - stat. significance
+    #####################################
+    '''
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_features_201705/"
+    f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
+    stock_hist_max = 1
+    stock_hist = range(1, stock_hist_max + 1)
+
+    data_reader = DataReader(dataset=f_dataset_docs)
+
+    myModel = Baselines(data_reader=data_reader, stock_hist=stock_hist)
+    myModel.run_stock_change_stat_sig()
+    '''
+    #####################################
+    # LDA + change + history - stat. significance
+    #####################################
+    '''
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_20170505/dataset/"
+    f_lda = dir_data + "lda_change_hist.npz"
+    f_labels = dir_data + "labels.npz"
+
+    myModel = Baselines(f_lda=f_lda, f_labels=f_labels, verbose=0)
+    myModel.run_lda_topic_change_history(stat_sig=True)
+    '''
+    #####################################
+    # ngramsv - stat. significance
+    # mutual information feature selection
+    ####################################
+    # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_features_201705/"
+    f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
+    f_lda = dir_data + "lda.npz"
+    stock_hist = None
+    unigram_mi_scores = dir_data + "mi-unigram-scores.csv"
+    bigram_mi_scores = dir_data + "mi-bigram-scores.csv"
+
+
+    data_reader = DataReader(dataset=f_dataset_docs)
+
+    vocab_top_k = [30]  # feature selection
+    for top_k in vocab_top_k:
+        print 'performing classification for vocabulary size: {}'.format(top_k)
+        with open(unigram_mi_scores) as scores:
+            vocab = [score.strip().split(',')[0] for score in scores.readlines()[:top_k]]
+
+        with open(bigram_mi_scores) as scores:
+            vocab_ngrams = [score.strip().split(',')[0] for score in scores.readlines()[:top_k]]
+
+        myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2,
+                            f_lda=f_lda,
+                            stock_today=False, stock_hist=stock_hist,
+                            verbose=0, vocab=vocab, vocab_ngrams=vocab_ngrams)
+        myModel.run_ngrams_stat_sig()
