@@ -332,7 +332,6 @@ class Baselines:
         # for each k
         print "starting tuning"
         for lda_k in lda_all:
-
             train_lda_today = lda_k[0][0]
             test_lda_today = lda_k[0][1]
             train_num, k = train_lda_today.shape
@@ -724,9 +723,6 @@ class Baselines:
         accu_train = self.cls_model.score(self.x_train, self.y_train)
         accu = accuracy_score(self.y_test, self.predicted)
         print "\t[Accuracy] train:", accu_train, "\ttest:", accu
-        print "true labels:", self.y_test
-        print "predictions:", list(self.predicted)
-
 
     def tune_LR(self, feature=None):
         cv_model = GridSearchCV(LogisticRegression(penalty='l2', max_iter=500),
@@ -809,6 +805,98 @@ class Baselines:
             _output("{}/{}.{}".format(path_feature, feature, "valid"), set="valid")
 
 
+    def sig_test_ngram_vs_all(self):
+        # ngrams
+        self.get_ngrams(ngrams="BOW", use_tfidf=True, run_cls=False, reset=False)
+
+        self.cls_model = LogisticRegression(C=1, solver='newton-cg',
+                                            max_iter=500,
+                                            verbose=self.verbose)
+        print '\t[feature num] {}'.format(self.x_train.shape[1]),
+        self.cls_model.fit(self.x_train, self.y_train)
+        self.predicted = self.cls_model.predict(self.x_test)
+        accu_train = self.cls_model.score(self.x_train, self.y_train)
+        accu = accuracy_score(self.y_test, self.predicted)
+        print "\t[Accuracy] train:", accu_train, "\ttest:", accu
+        sys.stdout.flush()
+        ngram_accu = np.array(np.array(self.y_test)==np.array(self.predicted))
+
+        def _plus_stock(feature):
+            # + stock change
+            stock_num = 1
+            feature = feature + "{}\tstock: t={}".format(feature, stock_num)
+            stock_num = self.add_stock_change(stock_num=stock_num, run_cls=False, reset=False)
+            sys.stdout.flush()
+            return feature
+
+        # all comb
+        feature = "[ngrams] BOW\t"
+        self.get_ngrams(ngrams="BOW", use_tfidf=False, run_cls=False)
+
+        # load lda file
+        lda_all = None
+        print "loading lda features ... ",
+        try:
+            lda_all = load_lda(self.f_lda)
+        except:
+            print "[ERROR] loading lda feature failed!"
+            exit(0)
+        print "done!"
+
+        for lda_k in lda_all:
+            train_lda_today = lda_k[0][0]
+            test_lda_today = lda_k[0][1]
+            train_num, k = train_lda_today.shape
+            test_num = test_lda_today.shape[0]
+            if k != 50:
+                continue
+            feature += "[topic] k={}, ".format(k)
+
+            # for each hist combination
+            for i, lda_k_hist in enumerate(lda_k):
+                if i == 0:
+                    continue
+                if lda_k_hist[2] != "alpha=0.9, L=10":
+                    continue
+                feature += "{} (cond)".format(lda_k_hist[2])
+                train_lda = np.array(
+                    [np.concatenate((train_lda_today[i], lda_k_hist[0][i])) for i in range(train_num)])
+                test_lda = np.array(
+                    [np.concatenate((test_lda_today[i], lda_k_hist[1][i])) for i in range(test_num)])
+                topic_num = self.add_lda(topic_dist=[train_lda, test_lda, feature], run_cls=False, reset=False)
+                feature = _plus_stock(feature)
+                print "feature: {}".format(feature)
+
+        self.cls_model = LogisticRegression(C=0.01, solver='liblinear',
+                                            max_iter=500,
+                                            verbose=self.verbose)
+        print '\t[feature num] {}'.format(self.x_train.shape[1]),
+        self.cls_model.fit(self.x_train, self.y_train)
+        self.predicted = self.cls_model.predict(self.x_test)
+        accu_train = self.cls_model.score(self.x_train, self.y_train)
+        accu = accuracy_score(self.y_test, self.predicted)
+        print "\t[Accuracy] train:", accu_train, "\ttest:", accu
+        sys.stdout.flush()
+        all_accu = np.array(np.array(self.y_test) == np.array(self.predicted))
+
+        # sig test
+        a = 0
+        b = 0
+        c = 0
+        d = 0
+        for i in range(len(ngram_accu)):
+            if ngram_accu[i] and all_accu[i]:
+                a += 1
+            elif ngram_accu[i] and not all_accu[i]:
+                b += 1
+            elif not ngram_accu[i] and all_accu[i]:
+                c += 1
+            else:
+                d += 1
+        print a, b, c, d
+
+
+
 if __name__ == "__main__":
     '''
     # dir_data = "/home/yiren/Documents/time-series-predict/data/bp/"
@@ -819,6 +907,35 @@ if __name__ == "__main__":
     myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2, verbose=0)
     myModel.run_tune()
     '''
+
+    #####################################
+    # sig test
+    #####################################
+    dir_data = "/home/yiren/Documents/time-series-predict/data/bp/dataset/"
+    # dir_data = "/Users/ds/git/financial-topic-modeling/data/bpcorpus/lda_features_201705/"
+    f_dataset_docs = dir_data + "corpus_bp_stock_cls.npz"
+    f_lda = dir_data + "lda.npz"
+    stock_hist = [1]
+    unigram_mi_scores = dir_data + "mi-unigram-scores.csv"
+    bigram_mi_scores = dir_data + "mi-bigram-scores.csv"
+
+    data_reader = DataReader(dataset=f_dataset_docs)
+
+    vocab_top_k = [30]  # feature selection
+    for top_k in vocab_top_k:
+        print 'performing classification for vocabulary size: {}'.format(top_k)
+        with open(unigram_mi_scores) as scores:
+            vocab = [score.strip().split(',')[0] for score in scores.readlines()[:top_k]]
+
+        with open(bigram_mi_scores) as scores:
+            vocab_ngrams = [score.strip().split(',')[0] for score in scores.readlines()[:top_k]]
+
+        myModel = Baselines(data_reader=data_reader, ngram_num=1000000, ngram_order=2,
+                            f_lda=f_lda,
+                            stock_today=False, stock_hist=stock_hist,
+                            verbose=0, vocab=vocab, vocab_ngrams=vocab_ngrams)
+        myModel.sig_test_ngram_vs_all()
+
 
     #####################################
     # ngrams (+ stock change)
@@ -979,3 +1096,4 @@ if __name__ == "__main__":
                             stock_today=False, stock_hist=stock_hist,
                             verbose=0, vocab=vocab, vocab_ngrams=vocab_ngrams)
         myModel.run_ngrams_stat_sig()
+
